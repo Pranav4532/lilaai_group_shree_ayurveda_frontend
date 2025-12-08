@@ -5,7 +5,8 @@ const fallback = "/images/default.jpg";
 // Exact filename mapping for mismatched images
 const manualMap = {
   "suvarna prashan": "/images/suvarna-prashan.jpg",
-  "arogya apple cider vinegar tablets": "/images/arogya-apple-cider-vinegar-tablets.jpg",
+  "arogya apple cider vinegar tablets":
+    "/images/arogya-apple-cider-vinegar-tablets.jpg",
 };
 
 export function getImageForProduct(name = "") {

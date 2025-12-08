@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { getAllUsers, updateUserProfile } from "../../../api/userService";
+import { getAllUsers, getCurrentUser } from "../../../api/userService";
 import { Pencil } from "lucide-react";
 
 export default function UserList({ onNavigate }) {
   const [users, setUsers] = useState([]);
+  const currentUser = getCurrentUser();
 
   useEffect(() => {
     loadUsers();
@@ -12,11 +13,6 @@ export default function UserList({ onNavigate }) {
   const loadUsers = async () => {
     const data = await getAllUsers();
     setUsers(data);
-  };
-
-  const handleRoleChange = async (user, newRole) => {
-    await updateUserProfile(user.id, { role: newRole });
-    loadUsers();
   };
 
   return (
@@ -36,25 +32,21 @@ export default function UserList({ onNavigate }) {
         </thead>
 
         <tbody>
-          {users.map(user => (
+          {users.map((user) => (
             <tr key={user.id}>
               <td>{user.id}</td>
               <td>{user.full_name}</td>
               <td>{user.email}</td>
 
-              <td>
-                <select
-                  className="form-select form-select-sm"
-                  value={user.role}
-                  onChange={(e) => handleRoleChange(user, e.target.value)}
-                >
-                  <option value="user">User</option>
-                  <option value="admin">Admin</option>
-                  <option value="superadmin">Super Admin</option>
-                </select>
-              </td>
+              {/* Show Role Only */}
+              <td className="fw-semibold text-primary">{user.role}</td>
 
-              <td>{user.is_verified ? "✔️" : "❌"}</td>
+              {/* Verified Badge */}
+              <td style={{ fontSize: "18px" }}>
+                {user.is_verified === 1 || user.is_verified === true
+                  ? "✔️"
+                  : "❌"}
+              </td>
 
               <td>
                 <button
@@ -68,10 +60,13 @@ export default function UserList({ onNavigate }) {
           ))}
 
           {users.length === 0 && (
-            <tr><td colSpan="6" className="text-center text-muted">No users found</td></tr>
+            <tr>
+              <td colSpan="6" className="text-center text-muted">
+                No users found
+              </td>
+            </tr>
           )}
         </tbody>
-
       </table>
     </div>
   );

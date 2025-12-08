@@ -44,15 +44,21 @@ import ReviewList from "./Reviews/ReviewList";
 import AuditLogList from "./AuditLogs/AuditLogList";
 
 export default function AdminPage() {
-  const [view, setView] = useState(localStorage.getItem("admin-view") || "admin-dashboard");
+  const [view, setView] = useState(
+    localStorage.getItem("admin-view") || "admin-dashboard"
+  );
   const [editId, setEditId] = useState(null);
 
   const onNavigate = (page) => {
     console.log("Navigate Admin →", page);
     localStorage.setItem("admin-view", page);
 
-    // Dynamic edit routes
-    if (page.includes("-edit-") || page.includes("-details-")) {
+    // Extract ID for dynamic navigation
+    if (
+      page.includes("-edit-") ||
+      page.includes("-images-") ||
+      page.includes("-details-")
+    ) {
       const id = page.split("-").pop();
       setEditId(id);
     } else {
@@ -63,71 +69,77 @@ export default function AdminPage() {
   };
 
   const renderPage = () => {
-    switch (view) {
-      case "admin-dashboard":
-        return <Dashboard onNavigate={onNavigate} />;
+    // -------------------- Dashboard --------------------
+    if (view === "admin-dashboard")
+      return <Dashboard onNavigate={onNavigate} />;
 
-      // Products
-      case "admin-products":
-        return <ProductList onNavigate={onNavigate} />;
-      case "admin-product-new":
-        return <ProductForm onNavigate={onNavigate} />;
-      case "admin-product-edit":
-        return <ProductEdit productId={editId} onNavigate={onNavigate} />;
-      case "admin-product-images":
-        return <ProductImages onNavigate={onNavigate} />;
+    // -------------------- Products ----------------------
+    if (view === "admin-products")
+      return <ProductList onNavigate={onNavigate} />;
 
-      // Categories
-      case "admin-categories":
-        return <CategoryList onNavigate={onNavigate} />;
-      case "admin-category-new":
-        return <CategoryForm onNavigate={onNavigate} />;
-      case "admin-category-edit":
-        return <CategoryForm categoryId={editId} onNavigate={onNavigate} />;
+    if (view === "admin-product-new")
+      return <ProductForm onNavigate={onNavigate} />;
 
-      // Users
-      case "admin-users":
-        return <UserList onNavigate={onNavigate} />;
-      case "admin-user-edit":
-        return <UserEdit userId={editId} onNavigate={onNavigate} />;
+    if (view.includes("admin-product-edit"))
+      return <ProductEdit productId={editId} onNavigate={onNavigate} />;
 
-      // Orders
-      case "admin-orders":
-        return <OrderList onNavigate={onNavigate} />;
-      case "admin-order-details":
-        return <OrderDetails orderId={editId} onNavigate={onNavigate} />;
+    if (view.includes("admin-product-images"))
+      return <ProductImages productId={editId} onNavigate={onNavigate} />;
 
-      // Coupons
-      case "admin-coupons":
-        return <CouponList onNavigate={onNavigate} />;
-      case "admin-coupon-new":
-        return <CouponForm onNavigate={onNavigate} />;
+    // ------------------- Categories ---------------------
+    if (view === "admin-categories")
+      return <CategoryList onNavigate={onNavigate} />;
 
-      // Ingredients
-      case "admin-ingredients":
-        return <IngredientList onNavigate={onNavigate} />;
-      case "admin-ingredient-new":
-        return <IngredientForm onNavigate={onNavigate} />;
-      case "admin-ingredient-edit":
-        return <IngredientForm ingredientId={editId} onNavigate={onNavigate} />;
+    if (view === "admin-category-new")
+      return <CategoryForm onNavigate={onNavigate} />;
 
-      // Inventory
-      case "admin-inventory":
-        return <InventoryList onNavigate={onNavigate} />;
-      case "admin-inventory-edit":
-        return <InventoryForm productId={editId} onNavigate={onNavigate} />;
+    if (view.includes("admin-category-edit"))
+      return <CategoryForm categoryId={editId} onNavigate={onNavigate} />;
 
-      // Reviews
-      case "admin-reviews":
-        return <ReviewList onNavigate={onNavigate} />;
+    // -------------------- Users -------------------------
+    if (view === "admin-users") return <UserList onNavigate={onNavigate} />;
 
-      // Audit Logs
-      case "admin-audits":
-        return <AuditLogList onNavigate={onNavigate} />;
+    if (view.includes("admin-user-edit"))
+      return <UserEdit userId={editId} onNavigate={onNavigate} />;
 
-      default:
-        return <Dashboard onNavigate={onNavigate} />;
-    }
+    // -------------------- Orders ------------------------
+    if (view === "admin-orders") return <OrderList onNavigate={onNavigate} />;
+
+    if (view.includes("admin-order-details"))
+      return <OrderDetails orderId={editId} onNavigate={onNavigate} />;
+
+    // -------------------- Coupons -----------------------
+    if (view === "admin-coupons") return <CouponList onNavigate={onNavigate} />;
+
+    if (view === "admin-coupon-new")
+      return <CouponForm onNavigate={onNavigate} />;
+
+    // -------------------- Ingredients -------------------
+    if (view === "admin-ingredients")
+      return <IngredientList onNavigate={onNavigate} />;
+
+    if (view === "admin-ingredient-new")
+      return <IngredientForm onNavigate={onNavigate} />;
+
+    if (view.includes("admin-ingredient-edit"))
+      return <IngredientForm ingredientId={editId} onNavigate={onNavigate} />;
+
+    // -------------------- Inventory ---------------------
+    if (view === "admin-inventory")
+      return <InventoryList onNavigate={onNavigate} />;
+
+    if (view.includes("admin-inventory-edit"))
+      return <InventoryForm productId={editId} onNavigate={onNavigate} />;
+
+    // -------------------- Reviews -----------------------
+    if (view === "admin-reviews") return <ReviewList onNavigate={onNavigate} />;
+
+    // -------------------- Audit Logs --------------------
+    if (view === "admin-audits")
+      return <AuditLogList onNavigate={onNavigate} />;
+
+    // Default
+    return <Dashboard onNavigate={onNavigate} />;
   };
 
   return <AdminLayout onNavigate={onNavigate}>{renderPage()}</AdminLayout>;

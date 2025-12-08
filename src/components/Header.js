@@ -1,5 +1,6 @@
 // src/components/Header.js
 import React, { useState, useEffect, useRef } from "react";
+import MobileNavigation from "./MobileNavigation";
 import {
   Search,
   ShoppingCart,
@@ -9,7 +10,7 @@ import {
   Shield,
   ChevronDown,
   Package,
-  CheckCircle
+  CheckCircle,
 } from "lucide-react";
 
 export default function Header({
@@ -21,7 +22,7 @@ export default function Header({
   onLoginOpen,
   user,
   onLogout,
-  cartCount
+  cartCount,
 }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [toast, setToast] = useState(""); // <-- logout toast
@@ -47,7 +48,6 @@ export default function Header({
 
   return (
     <header className="bg-light shadow-sm sticky-top">
-
       {/* 🌿 Smooth Logout Toast */}
       {toast && (
         <div
@@ -80,10 +80,19 @@ export default function Header({
         </div>
       </div>
 
+      <div className="d-lg-none">
+        <MobileNavigation
+          currentPage={currentPage}
+          onNavigate={onNavigate}
+          searchQuery={searchQuery}
+          onSearchChange={onSearchChange}
+          cartCount={cartCount}
+          onCartOpen={onCartOpen}
+        />
+      </div>
       {/* Navbar */}
       <nav className="navbar navbar-expand-lg navbar-light bg-white border-bottom">
         <div className="container py-2">
-
           {/* Logo */}
           <button
             className="navbar-brand d-flex align-items-center btn btn-link p-0 text-decoration-none"
@@ -111,12 +120,19 @@ export default function Header({
           </button>
 
           {/* Mobile Toggler */}
-          <button className="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#mainNav">
+          <button
+            className="navbar-toggler"
+            data-bs-toggle="collapse"
+            data-bs-target="#mainNav"
+          >
             <span className="navbar-toggler-icon"></span>
           </button>
 
           {/* Nav Menu */}
-          <div className="collapse navbar-collapse" id="mainNav">
+          <div
+            className="collapse navbar-collapse d-none d-lg-flex"
+            id="mainNav"
+          >
             <ul className="navbar-nav mx-auto">
               {[
                 { key: "home", label: "Home" },
@@ -127,7 +143,9 @@ export default function Header({
                 <li className="nav-item" key={item.key}>
                   <button
                     className={`btn btn-link nav-link ${
-                      currentPage === item.key ? "text-success fw-semibold" : "text-dark"
+                      currentPage === item.key
+                        ? "text-success fw-semibold"
+                        : "text-dark"
                     }`}
                     onClick={() => onNavigate(item.key)}
                   >
@@ -138,7 +156,7 @@ export default function Header({
             </ul>
 
             {/* Search */}
-            <form className="d-flex me-3">
+            <form className="d-none d-lg-flex me-3">
               <div className="position-relative">
                 <Search
                   className="position-absolute ms-2 top-50 translate-middle-y text-muted"
@@ -155,8 +173,7 @@ export default function Header({
             </form>
 
             {/* Right Section */}
-            <div className="d-flex align-items-center gap-3">
-
+            <div className="d-none d-lg-flex align-items-center gap-3">
               {/* User Dropdown */}
               {user ? (
                 <div ref={dropdownRef} className="position-relative">
@@ -174,35 +191,51 @@ export default function Header({
                       style={{ minWidth: 170, zIndex: 999 }}
                     >
                       <p className="small text-muted px-2 mb-1">
-                        Signed in as<br />
+                        Signed in as
+                        <br />
                         <strong>{user.full_name}</strong>
                       </p>
                       <hr className="my-2" />
 
-                      <button className="dropdown-item" onClick={() => onNavigate("profile")}>
+                      <button
+                        className="dropdown-item"
+                        onClick={() => onNavigate("profile")}
+                      >
                         <User size={14} /> My Profile
                       </button>
 
-                      <button className="dropdown-item" onClick={() => onNavigate("orders")}>
+                      <button
+                        className="dropdown-item"
+                        onClick={() => onNavigate("orders")}
+                      >
                         <Package size={14} /> My Orders
                       </button>
 
                       <hr className="my-2" />
 
-                      <button className="dropdown-item text-danger" onClick={handleLogout}>
+                      <button
+                        className="dropdown-item text-danger"
+                        onClick={handleLogout}
+                      >
                         <LogOut size={14} /> Logout
                       </button>
                     </div>
                   )}
                 </div>
               ) : (
-                <button className="btn btn-outline-secondary btn-sm" onClick={onLoginOpen}>
+                <button
+                  className="btn btn-outline-secondary btn-sm"
+                  onClick={onLoginOpen}
+                >
                   <User size={18} />
                 </button>
               )}
 
               {/* Cart */}
-              <button className="btn btn-outline-success position-relative btn-sm" onClick={onCartOpen}>
+              <button
+                className="btn btn-outline-success position-relative btn-sm"
+                onClick={onCartOpen}
+              >
                 <ShoppingCart size={18} />
                 {cartCount > 0 && (
                   <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">

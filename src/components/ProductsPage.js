@@ -30,9 +30,7 @@ export default function ProductsPage({ searchQuery = "", onNavigate }) {
 
         const mapped = productData.map((p) => {
           const name = p.title || p.name;
-          let imagePath = p.image
-            ? (p.image.startsWith("/") ? p.image : "/" + p.image)
-            : getImageForProduct(name);
+          let imagePath = p.url || p.image || getImageForProduct(name);
 
           return {
             id: p.id,
@@ -144,8 +142,10 @@ export default function ProductsPage({ searchQuery = "", onNavigate }) {
       </div>
     );
 
-  if (error)
-    return <div className="alert alert-danger text-center mt-5">{error}</div>;
+  if (error) {
+    toast.error(error);
+    return null;
+  }
 
   return (
     <div className="container my-5">

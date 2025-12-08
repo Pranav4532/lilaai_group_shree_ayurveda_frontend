@@ -158,7 +158,9 @@ export default function TestimonialsCarousel() {
               key={index}
               onClick={() => setCurrentIndex(index)}
               className={`rounded-circle border-0 ${
-                index === currentIndex ? "bg-success" : "bg-secondary bg-opacity-25"
+                index === currentIndex
+                  ? "bg-success"
+                  : "bg-secondary bg-opacity-25"
               }`}
               style={{ width: "10px", height: "10px" }}
             ></button>

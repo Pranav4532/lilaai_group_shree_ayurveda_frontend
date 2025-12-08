@@ -3,7 +3,8 @@ import React, { useEffect, useState, useMemo, useRef } from "react";
 import { X, Plus, Minus, ShoppingBag, ArrowRight, Trash2 } from "lucide-react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { getCart, updateCartItem, removeCartItem } from "../api/cartService";
-import { getImageForProduct } from "../utils/imageHelper"; // ✅ Unified image resolver
+import { getImageForProduct } from "../utils/imageHelper";
+import { toast } from "sonner"; // ✅ Replaced alerts
 
 export default function ShoppingCart({ isOpen, onClose, onNavigate }) {
   const [cartItems, setCartItems] = useState([]);
@@ -14,7 +15,6 @@ export default function ShoppingCart({ isOpen, onClose, onNavigate }) {
   const currentUser = JSON.parse(localStorage.getItem("user") || "null");
   const userId = currentUser?.id ?? null;
 
-  // ✅ Fetch cart only once per open
   useEffect(() => {
     if (!isOpen || hasFetched.current) return;
     hasFetched.current = true;
@@ -25,12 +25,14 @@ export default function ShoppingCart({ isOpen, onClose, onNavigate }) {
         const res = await getCart(userId);
         const items = Array.isArray(res) ? res : res.items ?? [];
 
-        const normalized = items.map((item) => {
-          const name = item.title || item.name;
-          const stableImage = getImageForProduct(name); // ✅ auto image mapping
-
-          return { ...item, stableImage };
-        });
+        const normalized = items.map((item) => ({
+          ...item,
+          stableImage: item.image?.startsWith("http")
+            ? item.image
+            : item.image_url?.startsWith("http")
+            ? item.image_url
+            : "/images/default.jpg",
+        }));
 
         setCartItems(normalized);
       } catch (err) {
@@ -49,13 +51,15 @@ export default function ShoppingCart({ isOpen, onClose, onNavigate }) {
     try {
       await removeCartItem(id);
       setCartItems((items) => items.filter((it) => it.id !== id));
+      toast.success("Removed from cart");
     } catch {
-      alert("Failed to remove item");
+      toast.error("Failed to remove item");
     }
   };
 
   const updateQuantity = async (id, newQuantity) => {
     if (newQuantity <= 0) return removeFromCart(id);
+
     try {
       await updateCartItem(id, { quantity: newQuantity });
       setCartItems((items) =>
@@ -63,8 +67,9 @@ export default function ShoppingCart({ isOpen, onClose, onNavigate }) {
           it.id === id ? { ...it, quantity: newQuantity } : it
         )
       );
+      toast.success("Quantity updated");
     } catch {
-      alert("Failed to update quantity");
+      toast.error("Failed to update quantity");
     }
   };
 
@@ -78,6 +83,10 @@ export default function ShoppingCart({ isOpen, onClose, onNavigate }) {
   }, [cartItems]);
 
   const handleCheckout = () => {
+    if (!currentUser) {
+      toast.error("Please login first!");
+      return;
+    }
     hasFetched.current = false;
     onClose();
     onNavigate?.("checkout");
@@ -100,7 +109,6 @@ export default function ShoppingCart({ isOpen, onClose, onNavigate }) {
         className="position-fixed top-0 end-0 bg-white h-100 shadow-lg overflow-auto d-flex flex-column"
         style={{ width: "400px", zIndex: 1050 }}
       >
-        {/* Header */}
         <div className="d-flex justify-content-between align-items-center border-bottom p-3">
           <div className="d-flex align-items-center gap-2">
             <ShoppingBag size={20} />
@@ -112,11 +120,10 @@ export default function ShoppingCart({ isOpen, onClose, onNavigate }) {
           </button>
         </div>
 
-        {/* Cart Body */}
         <div className="flex-grow-1 p-3 overflow-auto">
           {loading ? (
             <div className="text-center py-5">
-              <div className="spinner-border text-success" role="status" />
+              <div className="spinner-border text-success" />
             </div>
           ) : error ? (
             <div className="text-center text-danger py-4">{error}</div>
@@ -136,7 +143,10 @@ export default function ShoppingCart({ isOpen, onClose, onNavigate }) {
             </div>
           ) : (
             cartItems.map((item) => (
-              <div key={item.id} className="card mb-3 border-0 border-bottom pb-2">
+              <div
+                key={item.id}
+                className="card mb-3 border-0 border-bottom pb-2"
+              >
                 <div className="d-flex gap-3">
                   <img
                     src={item.stableImage}
@@ -151,6 +161,7 @@ export default function ShoppingCart({ isOpen, onClose, onNavigate }) {
                       (e.currentTarget.src = "/images/default.jpg")
                     }
                   />
+
                   <div className="flex-grow-1">
                     <div className="d-flex justify-content-between align-items-start">
                       <h6 className="mb-1">{item.title ?? item.name}</h6>
@@ -161,6 +172,7 @@ export default function ShoppingCart({ isOpen, onClose, onNavigate }) {
                         <Trash2 size={16} />
                       </button>
                     </div>
+
                     <div className="d-flex justify-content-between align-items-center mt-2">
                       <div className="d-flex align-items-center border rounded">
                         <button
@@ -184,6 +196,7 @@ export default function ShoppingCart({ isOpen, onClose, onNavigate }) {
                           <Plus size={14} />
                         </button>
                       </div>
+
                       <strong>
                         ₹{(item.price * (item.quantity ?? 1)).toFixed(0)}
                       </strong>
@@ -195,7 +208,6 @@ export default function ShoppingCart({ isOpen, onClose, onNavigate }) {
           )}
         </div>
 
-        {/* Footer */}
         {cartItems.length > 0 && (
           <div className="border-top p-3">
             <div className="d-flex justify-content-between small">
@@ -217,7 +229,10 @@ export default function ShoppingCart({ isOpen, onClose, onNavigate }) {
               <span>Total</span>
               <span>₹{total}</span>
             </div>
-            <button className="btn btn-success w-100 mt-3" onClick={handleCheckout}>
+            <button
+              className="btn btn-success w-100 mt-3"
+              onClick={handleCheckout}
+            >
               Proceed to Checkout <ArrowRight size={16} className="ms-1" />
             </button>
           </div>

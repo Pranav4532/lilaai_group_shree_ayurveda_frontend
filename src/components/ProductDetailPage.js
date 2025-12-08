@@ -28,36 +28,20 @@ export default function ProductDetailPage({ onNavigate }) {
   const loadProduct = async (id) => {
     try {
       const full = await getProductById(id);
-
       setProduct(full);
+      console.log("📌 Full Product Response:", full);
+      console.log("📌 Images:", full.images);
 
-      const normalizedImages = (full.images || [])
-        .map((img) => {
-          if (!img) return null;
+      const arr = Array.isArray(full.images) ? full.images : [];
 
-          let src = img;
-
-          // Fix missing slash after domain
-          src = src.replace("3000images", "3000/images");
-
-          // Extract only path after domain
-          src = src.replace(/^https?:\/\/[^\/]+/, "");
-
-          // Guarantee correct prefix
-          src = src.replace(/^\/?images\//, "/images/");
-
-          // Adding public URL
-          src = process.env.PUBLIC_URL + src;
-
-          return src;
-        })
+      const formatted = arr
+        .map((img) => img?.url || img) // If object shape: {id, url,...}
         .filter(Boolean);
 
-      const fallback = process.env.PUBLIC_URL + "/images/default.jpg";
+      const fallback = "/images/default.jpg";
 
-      setImages(normalizedImages.length ? normalizedImages : [fallback]);
-      setSelectedImage(normalizedImages[0] || fallback);
-
+      setImages(formatted.length ? formatted : [fallback]);
+      setSelectedImage(formatted[0] || fallback);
     } catch (err) {
       console.error("❌ Failed loading product:", err);
     }
@@ -100,18 +84,28 @@ export default function ProductDetailPage({ onNavigate }) {
 
   return (
     <div className="container my-5">
-
       {/* Breadcrumb */}
       <nav>
         <ol className="breadcrumb">
-          <li className="breadcrumb-item text-success" role="button" onClick={() => onNavigate("home")}>Home</li>
-          <li className="breadcrumb-item text-success" role="button" onClick={() => onNavigate("products")}>Products</li>
+          <li
+            className="breadcrumb-item text-success"
+            role="button"
+            onClick={() => onNavigate("home")}
+          >
+            Home
+          </li>
+          <li
+            className="breadcrumb-item text-success"
+            role="button"
+            onClick={() => onNavigate("products")}
+          >
+            Products
+          </li>
           <li className="breadcrumb-item active">{product.title}</li>
         </ol>
       </nav>
 
       <div className="row g-5">
-
         {/* MAIN IMAGE */}
         <div className="col-md-6">
           <img
@@ -131,12 +125,16 @@ export default function ProductDetailPage({ onNavigate }) {
                   alt={`thumb-${i}`}
                   onError={(e) => (e.target.style.display = "none")}
                   onClick={() => setSelectedImage(img)}
-                  className={`rounded border ${selectedImage === img ? "border-success border-2" : "border-light"}`}
+                  className={`rounded border ${
+                    selectedImage === img
+                      ? "border-success border-2"
+                      : "border-light"
+                  }`}
                   style={{
                     width: 70,
                     height: 70,
                     cursor: "pointer",
-                    objectFit: "cover"
+                    objectFit: "cover",
                   }}
                 />
               ))}
@@ -146,7 +144,6 @@ export default function ProductDetailPage({ onNavigate }) {
 
         {/* PRODUCT INFO */}
         <div className="col-md-6">
-          
           <h2 className="fw-bold">{product.title}</h2>
           {product.short_description && (
             <p className="text-muted">{product.short_description}</p>
@@ -164,7 +161,9 @@ export default function ProductDetailPage({ onNavigate }) {
             </>
           )}
 
-          <p><strong>SKU:</strong> {product.sku}</p>
+          <p>
+            <strong>SKU:</strong> {product.sku}
+          </p>
           <h4 className="text-success fw-bold mt-2">₹{product.price}</h4>
 
           {/* Quantity */}
@@ -177,7 +176,11 @@ export default function ProductDetailPage({ onNavigate }) {
               >
                 <Minus size={16} />
               </button>
-              <input className="form-control text-center" value={quantity} readOnly />
+              <input
+                className="form-control text-center"
+                value={quantity}
+                readOnly
+              />
               <button
                 className="btn btn-outline-secondary"
                 onClick={() => quantity < 10 && setQuantity(quantity + 1)}
@@ -206,7 +209,6 @@ export default function ProductDetailPage({ onNavigate }) {
       <div className="mt-5">
         <ProductReviews productId={product.id} />
       </div>
-
     </div>
   );
 }

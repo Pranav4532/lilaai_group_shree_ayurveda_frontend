@@ -13,32 +13,27 @@ export default function HomePage({ onNavigate }) {
     {
       icon: Shield,
       title: "Immunity & Wellness",
-      description:
-        "Boost your body's natural strength with herbal nutrition.",
+      description: "Boost your body's natural strength with herbal nutrition.",
     },
     {
       icon: Award,
       title: "Mental Clarity",
-      description:
-        "Calm the mind and enhance focus with Ayurvedic balance.",
+      description: "Calm the mind and enhance focus with Ayurvedic balance.",
     },
     {
       icon: Heart,
       title: "Heart Wellness",
-      description:
-        "Support blood circulation and overall heart function.",
+      description: "Support blood circulation and overall heart function.",
     },
     {
       icon: RefreshCw,
       title: "Energy & Vitality",
-      description:
-        "Rebuild stamina and strength using pure herbal extracts.",
+      description: "Rebuild stamina and strength using pure herbal extracts.",
     },
   ];
 
   return (
     <div className="w-100">
-
       {/* Hero Section */}
       <section className="bg-light py-5 text-center text-md-start">
         <div className="container d-flex flex-column flex-md-row align-items-center gap-4">
@@ -71,7 +66,7 @@ export default function HomePage({ onNavigate }) {
           <div className="col-md-6 text-center">
             <div className="position-relative">
               <img
-                src="https://images.unsplash.com/photo-1730130596425-197566414dc4?auto=format&fit=crop&w=800&q=80"
+                src="/images/banner.jpg"
                 alt="Ayurvedic Wellness"
                 className="img-fluid rounded-3 shadow"
               />
@@ -178,7 +173,6 @@ export default function HomePage({ onNavigate }) {
           </form>
         </div>
       </section>
-
     </div>
   );
 }

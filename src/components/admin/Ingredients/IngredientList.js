@@ -4,6 +4,7 @@ import {
   deleteIngredient,
 } from "../../../api/ingredientService";
 import { Pencil, Trash } from "lucide-react";
+import { toast } from "react-toastify";
 
 export default function IngredientList({ onNavigate }) {
   const [ingredients, setIngredients] = useState([]);
@@ -18,9 +19,14 @@ export default function IngredientList({ onNavigate }) {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this ingredient?")) return;
-    await deleteIngredient(id);
-    loadIngredients();
+    try {
+      await deleteIngredient(id);
+      toast.success("Ingredient deleted!");
+      loadIngredients();
+    } catch (error) {
+      toast.error("Failed to delete");
+      console.error(error);
+    }
   };
 
   return (
@@ -48,7 +54,6 @@ export default function IngredientList({ onNavigate }) {
             <tr key={item.id}>
               <td>{item.id}</td>
               <td>{item.name}</td>
-
               <td className="d-flex gap-2">
                 <button
                   className="btn btn-sm btn-primary"

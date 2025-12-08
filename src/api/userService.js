@@ -1,4 +1,3 @@
-// src/api/userService.js
 import api from "./axios";
 
 // 👤 Register new user
@@ -12,39 +11,37 @@ export const loginUser = async (credentials) => {
   const res = await api.post("/auth/login", credentials);
   const { token, user } = res.data;
 
-  // Save JWT token & user info
   localStorage.setItem("token", token);
   localStorage.setItem("user", JSON.stringify(user));
 
   return { token, user };
 };
 
-// 🚪 Logout user
+// 🚪 Logout
 export const logoutUser = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("user");
 };
 
-// 👤 Get current user
+// 👤 Get logged-in user (from localStorage)
 export const getCurrentUser = () => {
-  const user = localStorage.getItem("user");
-  return user ? JSON.parse(user) : null;
+  const data = localStorage.getItem("user");
+  return data ? JSON.parse(data) : null;
 };
 
-// 🧠 Get all users (Admin only)
+// 🧠 Admin — Get all users
 export const getAllUsers = async () => {
   const res = await api.get("/users");
-  return res.data;
+  return Array.isArray(res.data) ? res.data : [];
 };
 
-
-// 🧠 Get user by ID
+// 🧠 Admin — Get user by ID
 export const getUserById = async (id) => {
   const res = await api.get(`/users/${id}`);
-  return res.data;
+  return res.data; // backend returns a single object
 };
 
-// ✏️ Update user profile
+// ✏️ Admin / Superadmin — Update user
 export const updateUserProfile = async (id, updatedData) => {
   const res = await api.put(`/users/${id}`, updatedData);
   return res.data;

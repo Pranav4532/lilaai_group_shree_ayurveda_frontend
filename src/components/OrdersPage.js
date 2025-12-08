@@ -40,7 +40,10 @@ export default function OrdersPage({ onNavigate }) {
       <div className="container text-center py-5">
         <Package size={48} className="text-muted mb-3" />
         <h5>No orders found</h5>
-        <button className="btn btn-success" onClick={() => onNavigate("products")}>
+        <button
+          className="btn btn-success"
+          onClick={() => onNavigate("products")}
+        >
           Start Shopping
         </button>
       </div>
@@ -48,7 +51,6 @@ export default function OrdersPage({ onNavigate }) {
 
   return (
     <div className="container my-4">
-
       <h3 className="fw-bold mb-4">My Orders</h3>
 
       <style>
@@ -80,7 +82,6 @@ export default function OrdersPage({ onNavigate }) {
 
       {orders.map((order) => (
         <div key={order.id} className="order-card p-3 mb-4">
-
           {/* Header */}
           <div className="order-header d-flex justify-content-between align-items-center">
             <div>
@@ -111,7 +112,11 @@ export default function OrdersPage({ onNavigate }) {
               className="d-flex align-items-center mt-3 pb-3 border-bottom"
             >
               <img
-                src={getImageForProduct(item.product_title)}
+                src={
+                  item.image_url && item.image_url.startsWith("http")
+                    ? item.image_url
+                    : "/images/default.jpg"
+                }
                 className="order-item-img me-3"
                 alt={item.product_title}
                 onError={(e) => (e.target.src = "/images/default.jpg")}
@@ -143,7 +148,6 @@ export default function OrdersPage({ onNavigate }) {
 
           {/* Payment and Total */}
           <div className="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
-
             <div>
               <div className="small text-muted">Payment</div>
               <strong>{order.payment_method.toUpperCase()}</strong>

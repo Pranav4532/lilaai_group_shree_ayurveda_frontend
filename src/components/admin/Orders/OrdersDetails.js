@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getOrderDetails, updateOrder } from "../../../api/orderService";
+import { toast } from "react-toastify";
 
 export default function OrderDetails({ orderId, onNavigate }) {
   const [order, setOrder] = useState(null);
@@ -14,25 +15,37 @@ export default function OrderDetails({ orderId, onNavigate }) {
   };
 
   const handleStatusUpdate = async () => {
-    await updateOrder(order.id, { status: order.status });
-    alert("Order status updated!");
+    try {
+      await updateOrder(order.id, { status: order.status });
+      toast.success("Order status updated!");
+      loadOrder(); // Refresh updated status
+    } catch (err) {
+      console.error("Update failed:", err);
+      toast.error("Failed to update status");
+    }
   };
 
   if (!order) return <p className="text-center my-5">Loading...</p>;
 
   return (
     <div className="container my-4">
-      <h3 className="fw-bold">Order #{order.id}</h3>
+      <h3 className="fw-bold mb-3">Order #{order.id}</h3>
 
       <div className="card p-3 shadow-sm mb-3">
         <h5>Customer Info</h5>
-        <p className="mb-1"><strong>User ID:</strong> {order.user_id}</p>
-        <p className="mb-1"><strong>Date:</strong> {new Date(order.created_at).toLocaleString()}</p>
+        <p>
+          <strong>User ID:</strong> {order.user_id}
+        </p>
+        <p>
+          <strong>Date:</strong> {new Date(order.placed_at).toLocaleString()}
+        </p>
       </div>
 
       <div className="card p-3 shadow-sm mb-3">
         <h5>Order Summary</h5>
-        <p><strong>Total Amount:</strong> ₹{order.total_amount}</p>
+        <p>
+          <strong>Total Amount:</strong> ₹{order.total_amount}
+        </p>
 
         <label className="fw-bold">Status</label>
         <select
@@ -40,7 +53,7 @@ export default function OrderDetails({ orderId, onNavigate }) {
           value={order.status}
           onChange={(e) => setOrder({ ...order, status: e.target.value })}
         >
-          <option value="Pending">Pending</option>
+          <option value="pending">Pending</option>
           <option value="Processing">Processing</option>
           <option value="Shipped">Shipped</option>
           <option value="Delivered">Delivered</option>
@@ -52,7 +65,6 @@ export default function OrderDetails({ orderId, onNavigate }) {
         </button>
       </div>
 
-      {/* Products List */}
       <div className="card p-3 shadow-sm">
         <h5 className="mb-3">Ordered Items</h5>
 
@@ -76,7 +88,10 @@ export default function OrderDetails({ orderId, onNavigate }) {
         </table>
       </div>
 
-      <button className="btn btn-secondary mt-3" onClick={() => onNavigate("admin-orders")}>
+      <button
+        className="btn btn-secondary mt-3"
+        onClick={() => onNavigate("admin-orders")}
+      >
         Back to Orders
       </button>
     </div>

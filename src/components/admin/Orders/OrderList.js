@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { getAllOrders, deleteOrder, updateOrder } from "../../../api/orderService";
-import { Eye, Trash, Edit } from "lucide-react";
+import { getAllOrders, deleteOrder } from "../../../api/orderService";
+import { Eye, Trash } from "lucide-react";
+import { toast } from "react-toastify";
 
 export default function OrderList({ onNavigate }) {
   const [orders, setOrders] = useState([]);
@@ -14,15 +15,26 @@ export default function OrderList({ onNavigate }) {
     setOrders(data);
   };
 
-  const handleStatusChange = async (order, newStatus) => {
-    await updateOrder(order.id, { status: newStatus });
-    loadOrders();
-  };
-
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this order permanently?")) return;
     await deleteOrder(id);
+    toast.success("Order deleted");
     loadOrders();
+  };
+
+  const getStatusBadge = (status) => {
+    const badgeColors = {
+      pending: "badge bg-warning",
+      Processing: "badge bg-info",
+      Shipped: "badge bg-primary",
+      Delivered: "badge bg-success",
+      Cancelled: "badge bg-danger",
+    };
+    return (
+      <span className={badgeColors[status] || "badge bg-secondary"}>
+        {status}
+      </span>
+    );
   };
 
   return (
@@ -33,16 +45,15 @@ export default function OrderList({ onNavigate }) {
         <thead className="table-dark">
           <tr>
             <th>ID</th>
-            <th>User ID</th>
+            <th>User</th>
             <th>Total</th>
             <th>Status</th>
             <th>Date</th>
-            <th width="180px">Actions</th>
+            <th width="150px">Actions</th>
           </tr>
         </thead>
 
         <tbody>
-
           {orders.length === 0 && (
             <tr>
               <td colSpan="6" className="text-center text-muted py-3">
@@ -51,25 +62,13 @@ export default function OrderList({ onNavigate }) {
             </tr>
           )}
 
-          {orders.map(order => (
+          {orders.map((order) => (
             <tr key={order.id}>
               <td>{order.id}</td>
               <td>{order.user_id}</td>
               <td>₹{order.total_amount}</td>
-              <td>
-                <select
-                  className="form-select form-select-sm"
-                  value={order.status}
-                  onChange={(e) => handleStatusChange(order, e.target.value)}
-                >
-                  <option value="Pending">Pending</option>
-                  <option value="Processing">Processing</option>
-                  <option value="Shipped">Shipped</option>
-                  <option value="Delivered">Delivered</option>
-                  <option value="Cancelled">Cancelled</option>
-                </select>
-              </td>
-              <td>{new Date(order.created_at).toLocaleDateString()}</td>
+              <td>{getStatusBadge(order.status)}</td>
+              <td>{new Date(order.placed_at).toLocaleDateString()}</td>
 
               <td className="d-flex gap-2 justify-content-center">
                 <button
@@ -88,7 +87,6 @@ export default function OrderList({ onNavigate }) {
               </td>
             </tr>
           ))}
-
         </tbody>
       </table>
     </div>

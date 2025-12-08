@@ -20,7 +20,10 @@ export default class ErrorBoundary extends Component {
     if (this.state.hasError) {
       return (
         <div className="d-flex align-items-center justify-content-center vh-100 bg-light">
-          <div className="card shadow-lg p-4 text-center" style={{ maxWidth: "400px" }}>
+          <div
+            className="card shadow-lg p-4 text-center"
+            style={{ maxWidth: "400px" }}
+          >
             <div className="text-danger mb-3">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -40,7 +43,8 @@ export default class ErrorBoundary extends Component {
             </div>
             <h4 className="fw-bold mb-2 text-danger">Something went wrong</h4>
             <p className="text-muted small mb-3">
-              We're sorry for the inconvenience. Please refresh the page to try again.
+              We're sorry for the inconvenience. Please refresh the page to try
+              again.
             </p>
             <button
               onClick={() => window.location.reload()}

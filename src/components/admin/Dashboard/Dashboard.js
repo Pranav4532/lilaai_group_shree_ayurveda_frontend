@@ -48,9 +48,24 @@ export default function Dashboard({ onNavigate }) {
     }
   };
 
+  const formatMeta = (meta) => {
+    if (!meta) return "—";
+    try {
+      const obj =
+        typeof meta === "string" && meta.startsWith("{")
+          ? JSON.parse(meta)
+          : meta;
+
+      return Object.entries(obj)
+        .map(([key, val]) => `${key}: ${val}`)
+        .join(" | ");
+    } catch (e) {
+      return meta;
+    }
+  };
+
   return (
     <div className="container my-5">
-
       <h2 className="fw-bold mb-4">Admin Dashboard</h2>
 
       {/* Stats Cards */}
@@ -78,7 +93,7 @@ export default function Dashboard({ onNavigate }) {
               <div key={log.id} className="border-bottom mb-3 pb-2">
                 <strong>{log.action}</strong>
                 <br />
-                <small className="text-muted">{log.details}</small>
+                <small className="text-muted">{formatMeta(log.meta)}</small>
                 <br />
                 <small className="text-secondary">
                   {new Date(log.created_at).toLocaleString()}
@@ -88,7 +103,6 @@ export default function Dashboard({ onNavigate }) {
           )}
         </div>
       </div>
-
     </div>
   );
 }

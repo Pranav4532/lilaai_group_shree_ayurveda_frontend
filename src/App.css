@@ -1,38 +1,55 @@
-.App {
-  text-align: center;
-}
+/* 🌍 Global Responsive Fixes for Mobile */
+@media (max-width: 576px) {
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
+  /* Typography */
+  h1, h2, h3 {
+    font-size: 1.7rem !important;
+    line-height: 2.1rem !important;
   }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+  h4, h5, h6 {
+    font-size: 1.2rem !important;
   }
-  to {
-    transform: rotate(360deg);
+  p {
+    font-size: 0.95rem !important;
+  }
+
+  /* Layout spacing */
+  .container, .section {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+  .row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  /* Hero section buttons */
+  .btn {
+    padding: 10px 14px !important;
+    font-size: 1rem !important;
+    width: 100% !important; /* Better for mobile */
+  }
+  .btn + .btn {
+    margin-top: 10px;
+  }
+
+  /* Images always fully responsive */
+  img {
+    width: 100% !important;
+    height: auto !important;
+    object-fit: cover;
+  }
+
+  /* Navbar/logo scaling */
+  .header-logo img {
+    width: 48px !important;
+  }
+  .mobile-menu-btn {
+    padding: 6px 8px !important;
+  }
+
+  /* Prevent content clipping */
+  body {
+    overflow-x: hidden !important;
   }
 }

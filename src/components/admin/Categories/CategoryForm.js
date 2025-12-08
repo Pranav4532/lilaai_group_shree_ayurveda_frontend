@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { createCategory, getCategoryById, updateCategory } from "../../../api/categoryService";
+import {
+  createCategory,
+  getCategoryById,
+  updateCategory,
+} from "../../../api/categoryService";
+import { toast } from "react-toastify";
 
 export default function CategoryForm({ categoryId, onNavigate }) {
   const isEdit = Boolean(categoryId);
@@ -7,7 +12,7 @@ export default function CategoryForm({ categoryId, onNavigate }) {
   const [form, setForm] = useState({
     name: "",
     slug: "",
-    description: ""
+    description: "",
   });
 
   useEffect(() => {
@@ -19,20 +24,25 @@ export default function CategoryForm({ categoryId, onNavigate }) {
     setForm({
       name: data.name || "",
       slug: data.slug || "",
-      description: data.description || ""
+      description: data.description || "",
     });
   };
 
   const handleSubmit = async () => {
-    if (isEdit) {
-      await updateCategory(categoryId, form);
-      alert("Category updated");
-    } else {
-      await createCategory(form);
-      alert("Category created");
-    }
+    try {
+      if (isEdit) {
+        await updateCategory(categoryId, form);
+        toast.success("Category updated successfully!");
+      } else {
+        await createCategory(form);
+        toast.success("Category created successfully!");
+      }
 
-    onNavigate("admin-categories");
+      onNavigate("admin-categories");
+    } catch (err) {
+      console.error("Save failed:", err);
+      toast.error("Operation failed");
+    }
   };
 
   return (

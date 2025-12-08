@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getProducts, deleteProduct } from "../../../api/productService";
 import { Pencil, Trash, Image } from "lucide-react";
+import { toast } from "react-toastify";
 
 export default function ProductList({ onNavigate }) {
   const [products, setProducts] = useState([]);
@@ -15,9 +16,13 @@ export default function ProductList({ onNavigate }) {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure to delete this product?")) return;
-    await deleteProduct(id);
-    loadProducts();
+    try {
+      await deleteProduct(id);
+      toast.success("Product deleted successfully!");
+      loadProducts();
+    } catch (err) {
+      toast.error("Failed to delete product!");
+    }
   };
 
   return (
@@ -42,16 +47,23 @@ export default function ProductList({ onNavigate }) {
             <th>Actions</th>
           </tr>
         </thead>
+
         <tbody>
           {products.length === 0 && (
-            <tr><td colSpan="6" className="text-center text-muted">No product found</td></tr>
+            <tr>
+              <td colSpan="6" className="text-center text-muted">
+                No product found
+              </td>
+            </tr>
           )}
 
           {products.map((p) => (
             <tr key={p.id}>
               <td>{p.id}</td>
               <td>{p.title}</td>
-              <td>{p.weight_gram} {p.unit}</td>
+              <td>
+                {p.weight_gram} {p.unit}
+              </td>
               <td>{p.is_active ? "Yes" : "No"}</td>
               <td>{p.is_featured ? "Yes" : "No"}</td>
 
@@ -79,7 +91,6 @@ export default function ProductList({ onNavigate }) {
               </td>
             </tr>
           ))}
-
         </tbody>
       </table>
     </div>

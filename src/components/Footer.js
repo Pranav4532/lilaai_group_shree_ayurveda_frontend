@@ -12,11 +12,9 @@ import {
 export default function Footer({ onNavigate }) {
   return (
     <footer className="bg-success text-white pt-5">
-
       {/* Main Footer Section */}
       <div className="container py-5">
         <div className="row gy-5">
-
           {/* Company Info */}
           <div className="col-md-4">
             <div className="d-flex align-items-center mb-3">
@@ -98,15 +96,9 @@ export default function Footer({ onNavigate }) {
           <div className="col-md-3">
             <h6 className="fw-bold mb-3">Our Promise</h6>
             <ul className="list-unstyled small">
-              <li className="mb-2">
-                🌿 100% Natural Ayurvedic Ingredients
-              </li>
-              <li className="mb-2">
-                🧪 Root-Cause Based Formulations
-              </li>
-              <li className="mb-2">
-                💚 Safe & Effective for Daily Use
-              </li>
+              <li className="mb-2">🌿 100% Natural Ayurvedic Ingredients</li>
+              <li className="mb-2">🧪 Root-Cause Based Formulations</li>
+              <li className="mb-2">💚 Safe & Effective for Daily Use</li>
             </ul>
           </div>
 
@@ -134,13 +126,14 @@ export default function Footer({ onNavigate }) {
               </li>
               <li className="d-flex align-items-start">
                 <MapPin size={16} className="me-2 mt-1" />
-                Shree Samarth Krupa Clinic, Shop No. 2,<br />
-                Bhal Bus Stop, Shree Malangad Road,<br />
+                Shree Samarth Krupa Clinic, Shop No. 2,
+                <br />
+                Bhal Bus Stop, Shree Malangad Road,
+                <br />
                 Kalyan East, Maharashtra, India
               </li>
             </ul>
           </div>
-
         </div>
 
         <hr className="border-light my-4" />

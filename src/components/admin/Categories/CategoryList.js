@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getAllCategories, deleteCategory } from "../../../api/categoryService";
 import { Pencil, Trash } from "lucide-react";
+import { toast } from "react-toastify";
 
 export default function CategoryList({ onNavigate }) {
   const [categories, setCategories] = useState([]);
@@ -10,14 +11,24 @@ export default function CategoryList({ onNavigate }) {
   }, []);
 
   const loadCategories = async () => {
-    const data = await getAllCategories();
-    setCategories(data);
+    try {
+      const data = await getAllCategories();
+      setCategories(data);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load categories");
+    }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this category?")) return;
-    await deleteCategory(id);
-    loadCategories();
+    try {
+      await deleteCategory(id);
+      toast.success("Category deleted successfully!");
+      loadCategories();
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to delete category");
+    }
   };
 
   return (
@@ -74,7 +85,6 @@ export default function CategoryList({ onNavigate }) {
             </tr>
           ))}
         </tbody>
-
       </table>
     </div>
   );

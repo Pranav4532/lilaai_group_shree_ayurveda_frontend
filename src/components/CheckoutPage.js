@@ -11,7 +11,6 @@ import { applyCoupon } from "../api/couponService";
 import { getImageForProduct } from "../utils/imageHelper";
 import { toast } from "sonner";
 
-
 const UPI_ID = process.env.REACT_APP_UPI_ID;
 const UPI_NAME = process.env.REACT_APP_UPI_NAME;
 const QR_SIZE = 300;
@@ -112,13 +111,22 @@ export default function CheckoutPage({ onNavigate }) {
 
         // normalize cart items
         const itemsRaw = Array.isArray(cartRes) ? cartRes : cartRes.items ?? [];
-        const normalized = itemsRaw.map((it) => ({
-          ...it,
-          name: it.title || it.name || it.product_name,
-          image: getImageForProduct(it.title || it.name || it.product_name),
-          quantity: Number(it.quantity ?? 1),
-          price: Number(it.price ?? it.price_at_added ?? 0),
-        }));
+        const normalized = itemsRaw.map((it) => {
+          const img =
+            it.image && it.image.startsWith("http")
+              ? it.image
+              : it.image_url && it.image_url.startsWith("http")
+              ? it.image_url
+              : "/images/default.jpg";
+
+          return {
+            ...it,
+            name: it.title || it.name || it.product_name,
+            image: img,
+            quantity: Number(it.quantity ?? 1),
+            price: Number(it.price ?? it.price_at_added ?? 0),
+          };
+        });
 
         if (!mounted) return;
         setCartItems(normalized);
@@ -138,14 +146,19 @@ export default function CheckoutPage({ onNavigate }) {
   // Totals (consider coupon)
   // -------------------------
   const { subtotal, discountAmount, deliveryFee, total } = useMemo(() => {
-    const subtotal = cartItems.reduce((s, it) => s + (it.price || 0) * (it.quantity || 1), 0);
+    const subtotal = cartItems.reduce(
+      (s, it) => s + (it.price || 0) * (it.quantity || 1),
+      0
+    );
     let discount = 0;
 
     if (couponApplied) {
-      if (typeof couponApplied.discountAmount === "number") discount = couponApplied.discountAmount;
+      if (typeof couponApplied.discountAmount === "number")
+        discount = couponApplied.discountAmount;
       else if (typeof couponApplied.discountPercent === "number")
         discount = Math.round((subtotal * couponApplied.discountPercent) / 100);
-      else if (typeof couponApplied.discount === "number") discount = couponApplied.discount;
+      else if (typeof couponApplied.discount === "number")
+        discount = couponApplied.discount;
     }
 
     const deliveryFee = subtotal >= 500 || subtotal === 0 ? 0 : 50;
@@ -224,14 +237,20 @@ export default function CheckoutPage({ onNavigate }) {
       let computedDiscount = null;
       let discountPercent = null;
 
-      if (typeof payload.discountAmount === "number") computedDiscount = payload.discountAmount;
-      else if (typeof payload.discount === "number") computedDiscount = payload.discount;
+      if (typeof payload.discountAmount === "number")
+        computedDiscount = payload.discountAmount;
+      else if (typeof payload.discount === "number")
+        computedDiscount = payload.discount;
       else if (typeof payload.discount_value === "number") {
-        if (payload.discount_type?.toLowerCase().includes("percent")) discountPercent = payload.discount_value;
+        if (payload.discount_type?.toLowerCase().includes("percent"))
+          discountPercent = payload.discount_value;
         else computedDiscount = payload.discount_value;
-      } else if (typeof payload.amount_off === "number") computedDiscount = payload.amount_off;
-      else if (typeof payload.newTotal === "number") computedDiscount = Math.round(subtotal - payload.newTotal);
-      else if (typeof payload.finalPrice === "number") computedDiscount = Math.round(subtotal - payload.finalPrice);
+      } else if (typeof payload.amount_off === "number")
+        computedDiscount = payload.amount_off;
+      else if (typeof payload.newTotal === "number")
+        computedDiscount = Math.round(subtotal - payload.newTotal);
+      else if (typeof payload.finalPrice === "number")
+        computedDiscount = Math.round(subtotal - payload.finalPrice);
 
       if (computedDiscount == null && discountPercent == null) {
         setCouponError("Coupon applied but backend returned unexpected shape.");
@@ -247,7 +266,11 @@ export default function CheckoutPage({ onNavigate }) {
       }
     } catch (err) {
       console.error("Coupon apply failed:", err);
-      const msg = err?.response?.data?.message || err?.response?.data?.error || err?.message || "Failed to apply coupon";
+      const msg =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.message ||
+        "Failed to apply coupon";
       setCouponError(String(msg));
       setCouponApplied(null);
     } finally {
@@ -290,7 +313,6 @@ export default function CheckoutPage({ onNavigate }) {
     } catch (err) {
       console.error("Save address failed:", err);
       toast.error("Failed to save address. Try again.");
-
     } finally {
       setBusy(false);
     }
@@ -300,10 +322,10 @@ export default function CheckoutPage({ onNavigate }) {
   // Confirm payment & create order
   // -------------------------
   const handleConfirmPayment = async () => {
-    if (!selectedAddress) return toast.error("Please select a shipping address before continuing.");
+    if (!selectedAddress)
+      return toast.error("Please select a shipping address before continuing.");
 
-toast.info("Please ensure UPI payment is completed!");
-
+    toast.info("Please ensure UPI payment is completed!");
 
     setBusy(true);
     try {
@@ -327,14 +349,15 @@ toast.info("Please ensure UPI payment is completed!");
 
       await createOrder(orderData);
       // clear cart (best-effort)
-      await clearCart(user.id).catch((e) => console.warn("Clear cart failed:", e));
+      await clearCart(user.id).catch((e) =>
+        console.warn("Clear cart failed:", e)
+      );
 
       toast.success("Order placed successfully! 🎉");
       onNavigate("orders");
     } catch (err) {
       console.error("Place order failed:", err);
       toast.error("Failed to place order. Please try again!");
-
     } finally {
       setBusy(false);
     }
@@ -358,29 +381,47 @@ toast.info("Please ensure UPI payment is completed!");
     <div className="container py-4">
       {/* Header */}
       <div className="d-flex align-items-center mb-4">
-        <button className="btn btn-light me-3" onClick={() => onNavigate("products")}>
+        <button
+          className="btn btn-light me-3"
+          onClick={() => onNavigate("products")}
+        >
           <ArrowLeft size={16} className="me-1" />
           Back
         </button>
         <div>
           <h2 className="fw-bold mb-0">Checkout</h2>
-          <small className="text-muted">Secure UPI Payment • Fast Checkout</small>
+          <small className="text-muted">
+            Secure UPI Payment • Fast Checkout
+          </small>
         </div>
       </div>
 
       {/* Step indicator */}
       <div className="mb-4">
         <div className="d-flex gap-3 align-items-center">
-          {[{ id: 1, label: "Contact" }, { id: 2, label: "Shipping" }, { id: 3, label: "Payment" }, { id: 4, label: "Review" }].map((s) => (
+          {[
+            { id: 1, label: "Contact" },
+            { id: 2, label: "Shipping" },
+            { id: 3, label: "Payment" },
+            { id: 4, label: "Review" },
+          ].map((s) => (
             <div key={s.id} className="d-flex align-items-center">
               <div
-                className={`rounded-circle d-flex align-items-center justify-content-center ${step === s.id ? "bg-success text-white" : step > s.id ? "bg-success bg-opacity-25 text-success" : "bg-light text-muted"}`}
+                className={`rounded-circle d-flex align-items-center justify-content-center ${
+                  step === s.id
+                    ? "bg-success text-white"
+                    : step > s.id
+                    ? "bg-success bg-opacity-25 text-success"
+                    : "bg-light text-muted"
+                }`}
                 style={{ width: 34, height: 34 }}
               >
                 {s.id}
               </div>
               <div className="ms-2 me-3 small">{s.label}</div>
-              {s.id !== 4 && <div style={{ width: 24, height: 1, background: "#e9ecef" }} />}
+              {s.id !== 4 && (
+                <div style={{ width: 24, height: 1, background: "#e9ecef" }} />
+              )}
             </div>
           ))}
         </div>
@@ -395,26 +436,49 @@ toast.info("Please ensure UPI payment is completed!");
               <div className="card-header fw-bold">Contact Information</div>
               <div className="card-body">
                 <label className="form-label">Email</label>
-                <input className="form-control mb-2" value={form.email} readOnly />
+                <input
+                  className="form-control mb-2"
+                  value={form.email}
+                  readOnly
+                />
 
                 <div className="row">
                   <div className="col">
                     <label className="form-label">First name</label>
-                    <input className="form-control" value={form.firstName} readOnly />
+                    <input
+                      className="form-control"
+                      value={form.firstName}
+                      readOnly
+                    />
                   </div>
                   <div className="col">
                     <label className="form-label">Last name</label>
-                    <input className="form-control" value={form.lastName} readOnly />
+                    <input
+                      className="form-control"
+                      value={form.lastName}
+                      readOnly
+                    />
                   </div>
                 </div>
 
                 <div className="mt-3">
                   <label className="form-label">Phone</label>
-                  <input type="tel" className="form-control" value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} placeholder="Enter phone number" />
+                  <input
+                    type="tel"
+                    className="form-control"
+                    value={form.phone}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, phone: e.target.value }))
+                    }
+                    placeholder="Enter phone number"
+                  />
                 </div>
 
                 <div className="d-flex justify-content-end mt-3">
-                  <button className="btn btn-success" onClick={() => setStep(2)}>
+                  <button
+                    className="btn btn-success"
+                    onClick={() => setStep(2)}
+                  >
                     Continue to Shipping
                   </button>
                 </div>
@@ -426,27 +490,50 @@ toast.info("Please ensure UPI payment is completed!");
           {step === 2 && (
             <div className="card shadow-sm mb-4">
               <div className="card-header fw-bold d-flex align-items-center">
-                <Truck size={18} className="me-2 text-success" /> Shipping Address
+                <Truck size={18} className="me-2 text-success" /> Shipping
+                Address
               </div>
               <div className="card-body">
                 <div className="d-flex gap-4 mb-3">
                   <div className="form-check">
-                    <input id="useExisting" type="radio" className="form-check-input" checked={useExistingAddress} onChange={() => setUseExistingAddress(true)} />
-                    <label htmlFor="useExisting" className="form-check-label">Use Existing Address</label>
+                    <input
+                      id="useExisting"
+                      type="radio"
+                      className="form-check-input"
+                      checked={useExistingAddress}
+                      onChange={() => setUseExistingAddress(true)}
+                    />
+                    <label htmlFor="useExisting" className="form-check-label">
+                      Use Existing Address
+                    </label>
                   </div>
                   <div className="form-check">
-                    <input id="addNew" type="radio" className="form-check-input" checked={!useExistingAddress} onChange={() => setUseExistingAddress(false)} />
-                    <label htmlFor="addNew" className="form-check-label">Add New Address</label>
+                    <input
+                      id="addNew"
+                      type="radio"
+                      className="form-check-input"
+                      checked={!useExistingAddress}
+                      onChange={() => setUseExistingAddress(false)}
+                    />
+                    <label htmlFor="addNew" className="form-check-label">
+                      Add New Address
+                    </label>
                   </div>
                 </div>
 
                 {useExistingAddress ? (
                   <>
                     <label className="form-label">Select saved address</label>
-                    <select className="form-select mb-3" value={selectedAddress?.id ?? ""} onChange={(e) => {
-                      const found = addresses.find((a) => String(a.id) === String(e.target.value));
-                      setSelectedAddress(found || null);
-                    }}>
+                    <select
+                      className="form-select mb-3"
+                      value={selectedAddress?.id ?? ""}
+                      onChange={(e) => {
+                        const found = addresses.find(
+                          (a) => String(a.id) === String(e.target.value)
+                        );
+                        setSelectedAddress(found || null);
+                      }}
+                    >
                       <option value="">-- choose address --</option>
                       {addresses.map((a) => (
                         <option key={a.id} value={a.id}>
@@ -456,32 +543,78 @@ toast.info("Please ensure UPI payment is completed!");
                     </select>
 
                     <div className="d-flex justify-content-between">
-                      <button className="btn btn-outline-secondary" onClick={() => setStep(1)}>Back</button>
-                      <button className="btn btn-success" disabled={!selectedAddress} onClick={() => setStep(3)}>Continue to Payment</button>
+                      <button
+                        className="btn btn-outline-secondary"
+                        onClick={() => setStep(1)}
+                      >
+                        Back
+                      </button>
+                      <button
+                        className="btn btn-success"
+                        disabled={!selectedAddress}
+                        onClick={() => setStep(3)}
+                      >
+                        Continue to Payment
+                      </button>
                     </div>
                   </>
                 ) : (
                   <>
                     <label className="form-label">Street Address</label>
-                    <input className="form-control mb-2" value={form.address} onChange={(e) => setForm((p) => ({ ...p, address: e.target.value }))} />
+                    <input
+                      className="form-control mb-2"
+                      value={form.address}
+                      onChange={(e) =>
+                        setForm((p) => ({ ...p, address: e.target.value }))
+                      }
+                    />
 
                     <div className="row">
                       <div className="col">
                         <label className="form-label">City</label>
-                        <input className="form-control mb-2" value={form.city} onChange={(e) => setForm((p) => ({ ...p, city: e.target.value }))} />
+                        <input
+                          className="form-control mb-2"
+                          value={form.city}
+                          onChange={(e) =>
+                            setForm((p) => ({ ...p, city: e.target.value }))
+                          }
+                        />
                       </div>
                       <div className="col">
                         <label className="form-label">State</label>
-                        <input className="form-control mb-2" value={form.state} onChange={(e) => setForm((p) => ({ ...p, state: e.target.value }))} />
+                        <input
+                          className="form-control mb-2"
+                          value={form.state}
+                          onChange={(e) =>
+                            setForm((p) => ({ ...p, state: e.target.value }))
+                          }
+                        />
                       </div>
                     </div>
 
                     <label className="form-label">Pincode</label>
-                    <input className="form-control mb-3" value={form.pincode} onChange={(e) => setForm((p) => ({ ...p, pincode: e.target.value }))} />
+                    <input
+                      className="form-control mb-3"
+                      value={form.pincode}
+                      onChange={(e) =>
+                        setForm((p) => ({ ...p, pincode: e.target.value }))
+                      }
+                    />
 
                     <div className="d-flex justify-content-between">
-                      <button className="btn btn-outline-secondary" onClick={() => setStep(1)}>Back</button>
-                      <button className="btn btn-success" onClick={handleSaveAddress} disabled={busy}>Save & Continue</button>
+                      <button
+                        className="btn btn-outline-secondary"
+                        onClick={() => setStep(1)}
+                      >
+                        Back
+                      </button>
+                      <button
+                        className="btn btn-success"
+                        onClick={handleSaveAddress}
+                        disabled={busy}
+                      >
+                        Save & Continue
+                      </button>
                     </div>
                   </>
                 )}
@@ -497,31 +630,77 @@ toast.info("Please ensure UPI payment is completed!");
                 <div className="row g-3">
                   <div className="col-md-5 d-flex align-items-center justify-content-center">
                     <div className="p-2 border rounded">
-                      <img src={qrSrc} width={QR_SIZE} height={QR_SIZE} alt="UPI QR" />
+                      <img
+                        src={qrSrc}
+                        width={QR_SIZE}
+                        height={QR_SIZE}
+                        alt="UPI QR"
+                      />
                     </div>
                   </div>
 
                   <div className="col-md-7">
-                    <div><strong>UPI ID:</strong> {UPI_ID}</div>
-                    <div><strong>Name:</strong> {UPI_NAME}</div>
-                    <div className="mt-2"><strong>Amount:</strong> ₹{total}</div>
-
-                    <div className="mt-3">
-                      {secondsLeft > 0 ? <div className="text-success small">QR expires in {formatTime(secondsLeft)}</div> : <div className="text-danger small">Refreshing QR…</div>}
+                    <div>
+                      <strong>UPI ID:</strong> {UPI_ID}
+                    </div>
+                    <div>
+                      <strong>Name:</strong> {UPI_NAME}
+                    </div>
+                    <div className="mt-2">
+                      <strong>Amount:</strong> ₹{total}
                     </div>
 
                     <div className="mt-3">
-                      <button className="btn btn-success me-2" onClick={() => setStep(4)}>I have paid</button>
-                      <button className="btn btn-outline-secondary" onClick={() => { setQrNonce(Date.now()); setQrExpiresAt(Date.now() + QR_TTL_MS); }}>Refresh QR</button>
+                      {secondsLeft > 0 ? (
+                        <div className="text-success small">
+                          QR expires in {formatTime(secondsLeft)}
+                        </div>
+                      ) : (
+                        <div className="text-danger small">Refreshing QR…</div>
+                      )}
                     </div>
 
-                    <div className="mt-3 small text-muted">Use any UPI app (GPay, PhonePe, Paytm) to scan. After payment click "I have paid" and confirm.</div>
+                    <div className="mt-3">
+                      <button
+                        className="btn btn-success me-2"
+                        onClick={() => setStep(4)}
+                      >
+                        I have paid
+                      </button>
+                      <button
+                        className="btn btn-outline-secondary"
+                        onClick={() => {
+                          setQrNonce(Date.now());
+                          setQrExpiresAt(Date.now() + QR_TTL_MS);
+                        }}
+                      >
+                        Refresh QR
+                      </button>
+                    </div>
+
+                    <div className="mt-3 small text-muted">
+                      Use any UPI app (GPay, PhonePe, Paytm) to scan. After
+                      payment click "I have paid" and confirm.
+                    </div>
                   </div>
                 </div>
 
                 <div className="d-flex justify-content-between mt-3">
-                  <button className="btn btn-outline-secondary" onClick={() => setStep(2)}>Back</button>
-                  <button className="btn btn-success" onClick={() => { setStep(4); setQrNonce(Date.now()); }}>Continue to Review</button>
+                  <button
+                    className="btn btn-outline-secondary"
+                    onClick={() => setStep(2)}
+                  >
+                    Back
+                  </button>
+                  <button
+                    className="btn btn-success"
+                    onClick={() => {
+                      setStep(4);
+                      setQrNonce(Date.now());
+                    }}
+                  >
+                    Continue to Review
+                  </button>
                 </div>
               </div>
             </div>
@@ -532,15 +711,41 @@ toast.info("Please ensure UPI payment is completed!");
             <div className="card shadow-sm mb-4">
               <div className="card-header fw-bold">Review & Confirm</div>
               <div className="card-body">
-                <div className="mb-3"><strong>Contact:</strong> {form.firstName} {form.lastName} • {form.email} • {form.phone}</div>
-                <div className="mb-3"><strong>Shipping:</strong> {selectedAddress ? `${selectedAddress.address_line1}, ${selectedAddress.city} (${selectedAddress.postal_code})` : `${form.address}, ${form.city}`}</div>
-                <div className="mb-3"><strong>Payment:</strong> UPI (scan QR and confirm)</div>
+                <div className="mb-3">
+                  <strong>Contact:</strong> {form.firstName} {form.lastName} •{" "}
+                  {form.email} • {form.phone}
+                </div>
+                <div className="mb-3">
+                  <strong>Shipping:</strong>{" "}
+                  {selectedAddress
+                    ? `${selectedAddress.address_line1}, ${selectedAddress.city} (${selectedAddress.postal_code})`
+                    : `${form.address}, ${form.city}`}
+                </div>
+                <div className="mb-3">
+                  <strong>Payment:</strong> UPI (scan QR and confirm)
+                </div>
 
                 <div className="d-grid gap-2">
-                  <button className="btn btn-success" disabled={busy} onClick={handleConfirmPayment}>I HAVE PAID — Confirm & Place Order</button>
+                  <button
+                    className="btn btn-success"
+                    disabled={busy}
+                    onClick={handleConfirmPayment}
+                  >
+                    I HAVE PAID — Confirm & Place Order
+                  </button>
                   <div className="d-flex gap-2">
-                    <button className="btn btn-outline-secondary" onClick={() => setStep(3)}>Back</button>
-                    <button className="btn btn-link text-muted" onClick={() => setStep(2)}>Edit Address</button>
+                    <button
+                      className="btn btn-outline-secondary"
+                      onClick={() => setStep(3)}
+                    >
+                      Back
+                    </button>
+                    <button
+                      className="btn btn-link text-muted"
+                      onClick={() => setStep(2)}
+                    >
+                      Edit Address
+                    </button>
                   </div>
                 </div>
               </div>
@@ -553,18 +758,40 @@ toast.info("Please ensure UPI payment is completed!");
           <div className="card shadow-sm mb-3">
             <div className="card-body">
               <div className="d-flex justify-content-between align-items-start mb-3">
-                <div><h5 className="mb-0">Order Summary</h5><small className="text-muted">Review items</small></div>
-                <div className="text-end"><div className="small text-muted">Items: {cartItems.length}</div></div>
+                <div>
+                  <h5 className="mb-0">Order Summary</h5>
+                  <small className="text-muted">Review items</small>
+                </div>
+                <div className="text-end">
+                  <div className="small text-muted">
+                    Items: {cartItems.length}
+                  </div>
+                </div>
               </div>
 
               {cartItems.map((it) => (
                 <div key={it.id} className="d-flex align-items-center mb-3">
-                  <img src={it.image} style={{ width: 60, height: 60, objectFit: "cover", borderRadius: 8 }} alt={it.name} className="me-3" onError={(e) => (e.currentTarget.src = "/images/default.jpg")} />
+                  <img
+                    src={it.image}
+                    style={{
+                      width: 60,
+                      height: 60,
+                      objectFit: "cover",
+                      borderRadius: 8,
+                    }}
+                    alt={it.name}
+                    className="me-3"
+                    onError={(e) =>
+                      (e.currentTarget.src = "/images/default.jpg")
+                    }
+                  />
                   <div className="flex-grow-1 small">
                     <div className="fw-semibold">{it.name}</div>
                     <div className="text-muted">Qty: {it.quantity}</div>
                   </div>
-                  <div className="fw-bold">₹{(it.price * it.quantity).toFixed(0)}</div>
+                  <div className="fw-bold">
+                    ₹{(it.price * it.quantity).toFixed(0)}
+                  </div>
                 </div>
               ))}
 
@@ -577,13 +804,25 @@ toast.info("Please ensure UPI payment is completed!");
                 {couponApplied && (
                   <div className="d-flex justify-content-between text-success mt-1">
                     <div className="small">Coupon ({couponApplied.code})</div>
-                    <div>-₹{couponApplied.discountAmount ?? Math.round((couponApplied.discountPercent / 100) * subtotal)}</div>
+                    <div>
+                      -₹
+                      {couponApplied.discountAmount ??
+                        Math.round(
+                          (couponApplied.discountPercent / 100) * subtotal
+                        )}
+                    </div>
                   </div>
                 )}
 
                 <div className="d-flex justify-content-between mt-1">
                   <div className="small text-muted">Delivery</div>
-                  <div>{deliveryFee === 0 ? <span className="text-success">FREE</span> : `₹${deliveryFee}`}</div>
+                  <div>
+                    {deliveryFee === 0 ? (
+                      <span className="text-success">FREE</span>
+                    ) : (
+                      `₹${deliveryFee}`
+                    )}
+                  </div>
                 </div>
 
                 <hr />
@@ -594,7 +833,14 @@ toast.info("Please ensure UPI payment is completed!");
                     <div className="fw-bold fs-5">₹{total}</div>
                   </div>
                   <div>
-                    <button className="btn btn-outline-secondary btn-sm" onClick={() => { setStep(3); setQrNonce(Date.now()); setQrExpiresAt(Date.now() + QR_TTL_MS); }}>
+                    <button
+                      className="btn btn-outline-secondary btn-sm"
+                      onClick={() => {
+                        setStep(3);
+                        setQrNonce(Date.now());
+                        setQrExpiresAt(Date.now() + QR_TTL_MS);
+                      }}
+                    >
                       Pay Now
                     </button>
                   </div>
@@ -608,22 +854,42 @@ toast.info("Please ensure UPI payment is completed!");
             <div className="card-body">
               <div className="d-flex justify-content-between align-items-center mb-2">
                 <div className="fw-semibold">Apply Coupon</div>
-                {couponApplied ? <button className="btn btn-link btn-sm text-danger" onClick={removeCoupon}>Remove</button> : null}
+                {couponApplied ? (
+                  <button
+                    className="btn btn-link btn-sm text-danger"
+                    onClick={removeCoupon}
+                  >
+                    Remove
+                  </button>
+                ) : null}
               </div>
 
               {couponApplied ? (
                 <div className="p-2 border rounded bg-light mb-2">
-                  <div className="small">Applied: <strong>{couponApplied.code}</strong></div>
+                  <div className="small">
+                    Applied: <strong>{couponApplied.code}</strong>
+                  </div>
                 </div>
               ) : (
                 <>
                   <div className="input-group mb-2">
-                    <input className="form-control" placeholder="Enter coupon code" value={couponCode} onChange={(e) => setCouponCode(e.target.value)} />
-                    <button className="btn btn-success" onClick={handleApplyCoupon} disabled={couponLoading || !couponCode.trim()}>
+                    <input
+                      className="form-control"
+                      placeholder="Enter coupon code"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value)}
+                    />
+                    <button
+                      className="btn btn-success"
+                      onClick={handleApplyCoupon}
+                      disabled={couponLoading || !couponCode.trim()}
+                    >
                       {couponLoading ? "Applying..." : "Apply"}
                     </button>
                   </div>
-                  {couponError && <div className="small text-danger">{couponError}</div>}
+                  {couponError && (
+                    <div className="small text-danger">{couponError}</div>
+                  )}
                 </>
               )}
             </div>
@@ -631,8 +897,13 @@ toast.info("Please ensure UPI payment is completed!");
 
           <div className="card shadow-sm">
             <div className="card-body small text-muted">
-              <div className="mb-2"><Shield size={14} className="me-1" /> Secure Checkout (SSL)</div>
-              <div><Truck size={14} className="me-1" /> Free delivery on orders ₹500+</div>
+              <div className="mb-2">
+                <Shield size={14} className="me-1" /> Secure Checkout (SSL)
+              </div>
+              <div>
+                <Truck size={14} className="me-1" /> Free delivery on orders
+                ₹500+
+              </div>
             </div>
           </div>
         </div>

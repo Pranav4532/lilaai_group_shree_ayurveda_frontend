@@ -1,5 +1,13 @@
 import React from "react";
-import { Search, ShoppingCart, X, Home, Info, Package, Phone } from "lucide-react";
+import {
+  Search,
+  ShoppingCart,
+  X,
+  Home,
+  Info,
+  Package,
+  Phone,
+} from "lucide-react";
 
 export default function MobileNavigation({
   currentPage,
@@ -30,7 +38,10 @@ export default function MobileNavigation({
         aria-labelledby="mobileMenuLabel"
       >
         <div className="offcanvas-header border-bottom">
-          <h5 className="offcanvas-title fw-bold text-success" id="mobileMenuLabel">
+          <h5
+            className="offcanvas-title fw-bold text-success"
+            id="mobileMenuLabel"
+          >
             Kaveri Herbals
           </h5>
           <button
@@ -71,11 +82,15 @@ export default function MobileNavigation({
                 <li
                   key={item.key}
                   className={`list-group-item list-group-item-action border-0 py-3 ${
-                    currentPage === item.key ? "active bg-success text-white" : ""
+                    currentPage === item.key
+                      ? "active bg-success text-white"
+                      : ""
                   }`}
                   onClick={() => {
                     onNavigate(item.key);
-                    document.querySelector("#mobileMenu button.btn-close").click();
+                    document
+                      .querySelector("#mobileMenu button.btn-close")
+                      .click();
                   }}
                   role="button"
                 >

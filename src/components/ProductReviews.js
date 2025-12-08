@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { getReviewsByProduct, addReview } from "../api/reviewService";
 import { getCurrentUser } from "../api/userService";
+import { toast } from "sonner";
 
 export default function ProductReviews({ productId }) {
   const [reviews, setReviews] = useState([]);
@@ -10,47 +11,47 @@ export default function ProductReviews({ productId }) {
   const [rating, setRating] = useState(5);
   const [submitting, setSubmitting] = useState(false);
 
-  // Load reviews
-  useEffect(() => {
-    async function load() {
-      if (!productId) return;
+  const user = getCurrentUser(); // <-- FIXED
 
-      try {
-        setLoading(true);
-        const res = await getReviewsByProduct(productId);
+  // 🔄 Load Reviews Function
+  const loadReviews = async () => {
+    try {
+      setLoading(true);
+      const res = await getReviewsByProduct(productId);
 
-        let rows = [];
-        if (Array.isArray(res)) rows = res;
-        else if (Array.isArray(res?.data)) rows = res.data;
-        else if (Array.isArray(res?.items)) rows = res.items;
-        else if (Array.isArray(res?.rows)) rows = res.rows;
+      let rows = [];
+      if (Array.isArray(res)) rows = res;
+      else if (Array.isArray(res?.data)) rows = res.data;
+      else if (Array.isArray(res?.items)) rows = res.items;
+      else if (Array.isArray(res?.rows)) rows = res.rows;
 
-        console.log("Reviews Loaded:", rows); // Debug
-
-        setReviews(rows || []);
-      } catch (err) {
-        console.error("Failed to load reviews:", err);
-        setReviews([]);
-      } finally {
-        setLoading(false);
-      }
+      setReviews(rows || []);
+    } catch (err) {
+      console.error("Failed loading reviews:", err);
+      setReviews([]);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    load();
+  // 🔁 Load when product changes
+  useEffect(() => {
+    if (productId) loadReviews();
   }, [productId]);
 
   const handleSubmit = async () => {
-    const user = getCurrentUser();
     if (!user?.id) {
-      alert("Please log in first.");
+      toast.error("Please log in first.");
       return;
     }
+
     if (!text.trim()) {
-      alert("Write something.");
+      toast.warning("Please write a review.");
       return;
     }
 
     setSubmitting(true);
+
     try {
       await addReview({
         product_id: productId,
@@ -60,16 +61,14 @@ export default function ProductReviews({ productId }) {
         title: "Review",
       });
 
-      // Reload reviews
-      const res = await getReviewsByProduct(productId);
-      const rows = Array.isArray(res) ? res : res?.data || [];
-      setReviews(rows);
+      toast.success("Review submitted! ⭐");
 
       setText("");
       setRating(5);
-      alert("Review submitted!");
+      loadReviews(); // Refresh list
     } catch (err) {
-      alert("Could not submit review.");
+      console.error(err);
+      toast.error("Failed to submit review.");
     } finally {
       setSubmitting(false);
     }
@@ -77,15 +76,12 @@ export default function ProductReviews({ productId }) {
 
   return (
     <div className="card shadow-sm my-4">
-
-      {/* Header */}
       <div className="card-header fw-bold d-flex justify-content-between">
         <span>Customer Reviews</span>
         <span className="text-muted small">{reviews.length} Reviews</span>
       </div>
 
       <div className="card-body">
-
         {/* Loading */}
         {loading ? (
           <div className="text-center py-3">
@@ -97,63 +93,34 @@ export default function ProductReviews({ productId }) {
           </div>
         ) : (
           reviews.map((r) => {
-            console.log("Review row:", r); // Debug each review
-
-            // SAFELY EXTRACT FIELDS
             const name =
-              r.user_name ||
-              r.username ||
-              r.full_name ||
-              r.name ||
-              "Customer";
-
-            const dateRaw =
-              r.created_at ||
-              r.createdAt ||
-              r.review_date ||
-              r.date ||
-              null;
-
-            const formattedDate = dateRaw
-              ? new Date(dateRaw).toLocaleDateString()
+              r.user_name || r.username || r.full_name || r.name || "Customer";
+            const date = r.created_at
+              ? new Date(r.created_at).toLocaleDateString()
               : "";
-
-            const body =
-              r.body ||
-              r.review_body ||
-              r.comment ||
-              r.text ||
-              "";
+            const textContent =
+              r.body || r.review_body || r.text || r.comment || "";
 
             return (
               <div key={r.id} className="mb-3">
-
-                {/* NAME + DATE + STARS */}
                 <div className="d-flex justify-content-between">
                   <div>
-                    <b>{name}</b>
-                    {formattedDate && ` • ${formattedDate}`}
+                    <b>{name}</b> {date && `• ${date}`}
                   </div>
-
                   <div style={{ color: "#f6b01e" }}>
                     {"★".repeat(r.rating)}
                     {"☆".repeat(5 - r.rating)}
                   </div>
                 </div>
-
-                {/* BODY */}
-                <div className="mt-1">{body}</div>
-
+                <div className="mt-1">{textContent}</div>
                 <hr />
               </div>
             );
           })
         )}
 
-        {/* Write New Review */}
+        {/* ✍ Review Form */}
         <h6 className="mt-3">Write a review</h6>
-
-        {/* Rating */}
         <div className="d-flex align-items-center gap-2 mb-2">
           <span>Your rating:</span>
           {Array.from({ length: 5 }).map((_, i) => {
@@ -174,7 +141,6 @@ export default function ProductReviews({ productId }) {
           })}
         </div>
 
-        {/* Textbox */}
         <textarea
           className="form-control mb-2"
           rows="3"
@@ -183,7 +149,6 @@ export default function ProductReviews({ productId }) {
           placeholder="Share your experience..."
         />
 
-        {/* Submit Button */}
         <div className="text-end">
           <button
             className="btn btn-success"
@@ -193,7 +158,6 @@ export default function ProductReviews({ productId }) {
             {submitting ? "Submitting..." : "Submit Review"}
           </button>
         </div>
-
       </div>
     </div>
   );

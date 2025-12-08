@@ -18,13 +18,13 @@ export const createOrder = async (orderData) => {
   return res.data;
 };
 
-// ✏️ Update order (Admin)
+// 🔄 Update order status (Admin)
 export const updateOrder = async (id, orderData) => {
-  const res = await api.put(`/orders/${id}`, orderData);
+  const res = await api.put(`/orders/${id}/status`, orderData);
   return res.data;
 };
 
-// ❌ Cancel or Delete order
+// ❌ Delete order
 export const deleteOrder = async (id) => {
   const res = await api.delete(`/orders/${id}`);
   return res.data;
@@ -35,4 +35,3 @@ export const getOrderDetails = async (id) => {
   const res = await api.get(`/orders/details/${id}`);
   return Array.isArray(res.data) ? res.data : res.data.data || res.data;
 };
-

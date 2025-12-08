@@ -32,7 +32,7 @@ export default function ContactPage() {
       details: [
         "Shree Samarth Krupa Clinic, Shop No. 2,",
         "Bhal Bus Stop, Shree Malangad Road,",
-        "Kalyan East, Maharashtra"
+        "Kalyan East, Maharashtra",
       ],
       availability: "Visit us anytime",
     },
@@ -46,7 +46,6 @@ export default function ContactPage() {
 
   return (
     <div className="container py-5">
-
       {/* Hero Section */}
       <section
         className="row align-items-center mb-5 p-4 rounded"
@@ -60,19 +59,21 @@ export default function ContactPage() {
             We're Always <span className="text-success">Here for You</span>
           </h1>
           <p className="text-muted mb-4">
-            From expert Ayurvedic consultations to smooth order support —
-            we ensure a joyful wellness journey with us.
+            From expert Ayurvedic consultations to smooth order support — we
+            ensure a joyful wellness journey with us.
           </p>
 
           <div className="d-flex flex-wrap gap-3">
             <div className="d-flex align-items-center fw-semibold text-muted">
-              <Headphones size={20} className="me-2 text-success" /> 24/7 Support
+              <Headphones size={20} className="me-2 text-success" /> 24/7
+              Support
             </div>
             <div className="d-flex align-items-center fw-semibold text-muted">
               <Users size={20} className="me-2 text-success" /> Health Experts
             </div>
             <div className="d-flex align-items-center fw-semibold text-muted">
-              <MessageCircle size={20} className="me-2 text-success" /> Quick Response
+              <MessageCircle size={20} className="me-2 text-success" /> Quick
+              Response
             </div>
           </div>
         </div>
@@ -111,9 +112,7 @@ export default function ContactPage() {
                     </p>
                   ))}
 
-                  <p className="text-success small mt-2">
-                    {info.availability}
-                  </p>
+                  <p className="text-success small mt-2">{info.availability}</p>
                 </div>
               </div>
             </div>

@@ -3,13 +3,13 @@ import api from "./axios";
 // 📌 Get all products
 export const getProducts = async () => {
   const res = await api.get("/products");
-  return Array.isArray(res.data) ? res.data : res.data.data || [];
+  return res.data; // no .data.data
 };
 
 // 📌 Get single product by ID
 export const getProductById = async (id) => {
   const res = await api.get(`/products/${id}`);
-  return res.data?.data || res.data;
+  return res.data; // directly return product
 };
 
 // 📌 Create product (Admin only)

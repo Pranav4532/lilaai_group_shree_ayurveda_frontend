@@ -2,7 +2,6 @@ import axios from "axios";
 
 const api = axios.create({
   baseURL: "https://lilaai-group-shree-ayurveda.onrender.com/api",
-  headers: { "Content-Type": "application/json" },
 });
 
 // Add token

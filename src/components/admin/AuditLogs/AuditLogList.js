@@ -7,11 +7,16 @@ export default function AuditLogList() {
   const [logs, setLogs] = useState([]);
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadUsers();
-    loadLogs();
+    loadInitialData();
   }, []);
+
+  const loadInitialData = async () => {
+    await Promise.all([loadUsers(), loadLogs()]);
+    setLoading(false);
+  };
 
   const loadUsers = async () => {
     const data = await getAllUsers();
@@ -25,14 +30,34 @@ export default function AuditLogList() {
 
   const filterLogsByUser = async (userId) => {
     setSelectedUser(userId);
-
-    if (!userId) {
-      loadLogs();
-      return;
-    }
+    if (!userId) return loadLogs();
 
     const filtered = await getAuditsByUser(userId);
     setLogs(filtered);
+  };
+
+  const formatMeta = (meta) => {
+    if (!meta) return "—";
+
+    try {
+      const obj = typeof meta === "string" ? JSON.parse(meta) : meta;
+      return Object.entries(obj)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join("\n");
+    } catch {
+      return meta;
+    }
+  };
+
+  const actionStyle = (action) => {
+    switch (action) {
+      case "DELETE":
+        return "text-danger fw-bold";
+      case "UPDATE":
+        return "text-warning fw-bold";
+      default:
+        return "text-success fw-bold"; // CREATE
+    }
   };
 
   return (
@@ -58,32 +83,46 @@ export default function AuditLogList() {
         </div>
       </div>
 
-      {/* Audit Log Table */}
+      {/* Table */}
       <div className="table-responsive">
-        <table className="table table-bordered table-hover">
+        <table className="table table-bordered table-hover align-middle">
           <thead className="table-dark">
             <tr>
-              <th>User</th>
-              <th>Action</th>
+              <th width="180px">User</th>
+              <th width="100px">Action</th>
               <th>Details</th>
-              <th>Date & Time</th>
+              <th width="180px">Date & Time</th>
             </tr>
           </thead>
 
           <tbody>
-            {logs.map((log) => (
-              <tr key={log.id}>
-                <td>{log.user_name || "Unknown"}</td>
-                <td><strong>{log.action}</strong></td>
-                <td>{log.details}</td>
-                <td className="small text-muted">
-                  <Clock size={13} className="me-1" />
-                  {new Date(log.created_at).toLocaleString()}
+            {loading ? (
+              <tr>
+                <td colSpan="4" className="text-center py-3">
+                  Loading...
                 </td>
               </tr>
-            ))}
+            ) : logs.length > 0 ? (
+              logs.map((log) => (
+                <tr key={log.id}>
+                  <td>{log.user_name || log.email || "Unknown"}</td>
 
-            {logs.length === 0 && (
+                  <td className={actionStyle(log.action)}>{log.action}</td>
+
+                  {/* Use meta instead of details */}
+                  <td style={{ whiteSpace: "pre-wrap" }}>
+                    {formatMeta(log.meta)}
+                  </td>
+
+                  <td className="small text-muted">
+                    <Clock size={13} className="me-1" />
+                    {log.created_at
+                      ? new Date(log.created_at).toLocaleString()
+                      : "N/A"}
+                  </td>
+                </tr>
+              ))
+            ) : (
               <tr>
                 <td colSpan="4" className="text-center text-muted py-3">
                   No audit logs found.

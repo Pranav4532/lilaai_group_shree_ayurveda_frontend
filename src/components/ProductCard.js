@@ -2,12 +2,18 @@
 import React, { useState, memo } from "react";
 import { Star, ShoppingCart, Heart, Eye } from "lucide-react";
 
-const ProductCard = memo(function ProductCard({ product, onNavigate, onAddToCart }) {
+const ProductCard = memo(function ProductCard({
+  product,
+  onNavigate,
+  onAddToCart,
+}) {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   const discountPercentage = product.originalPrice
-    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+    ? Math.round(
+        ((product.originalPrice - product.price) / product.originalPrice) * 100
+      )
     : 0;
 
   // ✅ Toggle wishlist (purely frontend)
@@ -46,7 +52,11 @@ const ProductCard = memo(function ProductCard({ product, onNavigate, onAddToCart
       {/* Product Image */}
       <div className="position-relative">
         <img
-          src={product.image}
+          src={
+            product.image && product.image.startsWith("http")
+              ? product.image
+              : `${process.env.PUBLIC_URL}/images/default.jpg`
+          }
           alt={product.name}
           className="card-img-top"
           style={{ height: "250px", objectFit: "cover" }}

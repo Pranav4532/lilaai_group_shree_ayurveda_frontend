@@ -1,13 +1,22 @@
 import React, { useEffect, useState } from "react";
-import { createCoupon, updateCoupon, getAllCoupons } from "../../../api/couponService";
+import {
+  createCoupon,
+  updateCoupon,
+  getAllCoupons,
+} from "../../../api/couponService";
+import { toast } from "react-toastify";
 
 export default function CouponForm({ couponId, onNavigate }) {
   const isEdit = Boolean(couponId);
 
   const [form, setForm] = useState({
     code: "",
-    discount_percent: "",
-    expiry_date: ""
+    description: "",
+    discount_type: "percentage", // default
+    discount_value: "",
+    min_order_amount: "",
+    usage_limit: "",
+    expires_at: "",
   });
 
   useEffect(() => {
@@ -15,32 +24,49 @@ export default function CouponForm({ couponId, onNavigate }) {
   }, []);
 
   const loadCoupon = async () => {
-    const all = await getAllCoupons();
-    const found = all.find(c => c.id === Number(couponId));
-    if (found) {
-      setForm({
-        code: found.code,
-        discount_percent: found.discount_percent,
-        expiry_date: found.expiry_date.split("T")[0] // Format yyyy-mm-dd
-      });
+    try {
+      const all = await getAllCoupons();
+      const found = all.find((c) => c.id === Number(couponId));
+
+      if (found) {
+        setForm({
+          code: found.code,
+          description: found.description || "",
+          discount_type: found.discount_type,
+          discount_value: found.discount_value,
+          min_order_amount: found.min_order_amount || "",
+          usage_limit: found.usage_limit || "",
+          expires_at: found.expires_at ? found.expires_at.split("T")[0] : "",
+        });
+      }
+    } catch (err) {
+      toast.error("Failed to load coupon details");
     }
   };
 
   const handleSubmit = async () => {
-    if (!form.code || !form.discount_percent || !form.expiry_date) {
-      return alert("Fill all fields!");
+    if (!form.code || !form.discount_value) {
+      toast.error("Code and discount value are required!");
+      return;
     }
 
-    if (isEdit) {
-      await updateCoupon(couponId, form);
-      alert("Coupon updated!");
-    } else {
-      await createCoupon(form);
-      alert("Coupon created!");
-    }
+    try {
+      if (isEdit) {
+        await updateCoupon(couponId, form);
+        toast.success("Coupon updated!");
+      } else {
+        await createCoupon(form);
+        toast.success("Coupon created!");
+      }
 
-    onNavigate("admin-coupons");
+      setTimeout(() => onNavigate("admin-coupons"), 800);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to save coupon");
+    }
   };
+
+  const updateField = (field, value) =>
+    setForm((prev) => ({ ...prev, [field]: value }));
 
   return (
     <div className="container my-4">
@@ -49,25 +75,63 @@ export default function CouponForm({ couponId, onNavigate }) {
       </h3>
 
       <div className="mb-3">
-        <label className="form-label">Coupon Code</label>
+        <label className="form-label">Coupon Code *</label>
         <input
           className="form-control"
-          name="code"
           value={form.code}
-          onChange={e => setForm({ ...form, code: e.target.value })}
+          onChange={(e) => updateField("code", e.target.value)}
         />
       </div>
 
       <div className="mb-3">
-        <label className="form-label">Discount %</label>
+        <label className="form-label">Description</label>
+        <input
+          className="form-control"
+          value={form.description}
+          onChange={(e) => updateField("description", e.target.value)}
+        />
+      </div>
+
+      <div className="mb-3">
+        <label className="form-label">Discount Type *</label>
+        <select
+          className="form-control"
+          value={form.discount_type}
+          onChange={(e) => updateField("discount_type", e.target.value)}
+        >
+          <option value="percentage">Percentage (%)</option>
+          <option value="flat">Flat Amount</option>
+        </select>
+      </div>
+
+      <div className="mb-3">
+        <label className="form-label">Discount Value *</label>
         <input
           type="number"
           className="form-control"
-          name="discount_percent"
           min="1"
-          max="90"
-          value={form.discount_percent}
-          onChange={e => setForm({ ...form, discount_percent: e.target.value })}
+          value={form.discount_value}
+          onChange={(e) => updateField("discount_value", e.target.value)}
+        />
+      </div>
+
+      <div className="mb-3">
+        <label className="form-label">Minimum Order Amount</label>
+        <input
+          type="number"
+          className="form-control"
+          value={form.min_order_amount}
+          onChange={(e) => updateField("min_order_amount", e.target.value)}
+        />
+      </div>
+
+      <div className="mb-3">
+        <label className="form-label">Usage Limit</label>
+        <input
+          type="number"
+          className="form-control"
+          value={form.usage_limit}
+          onChange={(e) => updateField("usage_limit", e.target.value)}
         />
       </div>
 
@@ -76,9 +140,8 @@ export default function CouponForm({ couponId, onNavigate }) {
         <input
           type="date"
           className="form-control"
-          name="expiry_date"
-          value={form.expiry_date}
-          onChange={e => setForm({ ...form, expiry_date: e.target.value })}
+          value={form.expires_at}
+          onChange={(e) => updateField("expires_at", e.target.value)}
         />
       </div>
 
@@ -86,7 +149,10 @@ export default function CouponForm({ couponId, onNavigate }) {
         {isEdit ? "Update" : "Create"}
       </button>
 
-      <button className="btn btn-secondary ms-2" onClick={() => onNavigate("admin-coupons")}>
+      <button
+        className="btn btn-secondary ms-2"
+        onClick={() => onNavigate("admin-coupons")}
+      >
         Cancel
       </button>
     </div>

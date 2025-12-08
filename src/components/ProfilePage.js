@@ -21,6 +21,8 @@ import {
   Trash,
 } from "lucide-react";
 
+import { toast } from "sonner";
+
 export default function ProfilePage() {
   const [user, setUser] = useState(null);
   const [formData, setFormData] = useState({});
@@ -81,12 +83,25 @@ export default function ProfilePage() {
 
   const handleProfileSave = async () => {
     try {
-      await updateUserProfile(user.id, formData);
-      alert("✅ Profile updated successfully!");
+      const { full_name, phone } = formData; // ⬅ pick allowed fields only
+
+      const res = await updateUserProfile(user.id, {
+        full_name,
+        phone,
+      });
+
+      // 🔄 Update localStorage so UI updates
+      if (res.user) {
+        localStorage.setItem("user", JSON.stringify(res.user));
+        setUser(res.user);
+        setFormData(res.user);
+      }
+
+      toast.success("Profile updated successfully!");
       setIsEditingProfile(false);
     } catch (err) {
-      alert("❌ Failed to update profile.");
       console.error(err);
+      toast.error("Failed to update profile.");
     }
   };
 
@@ -96,38 +111,44 @@ export default function ProfilePage() {
   const handleAddAddress = async () => {
     try {
       await createAddress(newAddress);
-      alert("✅ Address added successfully!");
+      toast.success("Address added successfully! 🎉");
       setIsAddingAddress(false);
       loadAddresses();
     } catch (err) {
-      alert("❌ Failed to add address.");
       console.error(err);
+      toast.error("Failed to add address ❌");
     }
   };
 
   const handleUpdateAddress = async (id, data) => {
     try {
       await updateAddress(id, data);
-      alert("✅ Address updated successfully!");
+      toast.success("Address updated successfully! 🎉");
       setIsEditingAddress(false);
       loadAddresses();
     } catch (err) {
-      alert("❌ Failed to update address.");
       console.error(err);
+      toast.error("Failed to update address ❌");
     }
   };
 
   const handleDeleteAddress = async (id) => {
     if (!window.confirm("Are you sure?")) return;
 
-    try {
-      await deleteAddress(id);
-      alert("🗑️ Address deleted!");
-      loadAddresses();
-    } catch (err) {
-      alert("❌ Failed to delete.");
-      console.error(err);
-    }
+    toast.warning("Click delete to confirm.", {
+      action: {
+        label: "Delete",
+        onClick: async () => {
+          try {
+            await deleteAddress(id);
+            toast.success("🗑️ Address deleted!");
+            loadAddresses();
+          } catch (err) {
+            toast.error("❌ Failed to delete address.");
+          }
+        },
+      },
+    });
   };
 
   if (loading)
@@ -141,7 +162,6 @@ export default function ProfilePage() {
     <div className="container py-5">
       <div className="row justify-content-center">
         <div className="col-md-8 col-lg-6">
-
           {/* PROFILE CARD */}
           <div className="card shadow border-0 rounded-4 mb-4">
             <div className="card-header bg-success text-white text-center py-3">
@@ -156,7 +176,9 @@ export default function ProfilePage() {
                   className="form-control"
                   value={formData.full_name || ""}
                   readOnly={!isEditingProfile}
-                  onChange={(e) => handleProfileChange("full_name", e.target.value)}
+                  onChange={(e) =>
+                    handleProfileChange("full_name", e.target.value)
+                  }
                 />
               </div>
 
@@ -184,7 +206,9 @@ export default function ProfilePage() {
                     className="form-control"
                     value={formData.phone || ""}
                     readOnly={!isEditingProfile}
-                    onChange={(e) => handleProfileChange("phone", e.target.value)}
+                    onChange={(e) =>
+                      handleProfileChange("phone", e.target.value)
+                    }
                   />
                 </div>
               </div>
@@ -198,7 +222,10 @@ export default function ProfilePage() {
                     >
                       Cancel
                     </button>
-                    <button className="btn btn-success" onClick={handleProfileSave}>
+                    <button
+                      className="btn btn-success"
+                      onClick={handleProfileSave}
+                    >
                       <Save size={16} className="me-1" /> Save Changes
                     </button>
                   </>
@@ -233,7 +260,10 @@ export default function ProfilePage() {
                 <p className="text-muted">No addresses added yet.</p>
               ) : (
                 addresses.map((addr) => (
-                  <div key={addr.id} className="border rounded-3 p-3 mb-3 bg-light">
+                  <div
+                    key={addr.id}
+                    className="border rounded-3 p-3 mb-3 bg-light"
+                  >
                     <strong>{addr.label || "Address"}</strong>
                     <div className="small text-muted">
                       {addr.address_line1}, {addr.address_line2}, {addr.city},{" "}
@@ -303,7 +333,10 @@ function AddressModal({ title, address, setAddress, onClose, onSave }) {
   return (
     <div
       className="modal fade show d-block"
-      style={{ backgroundColor: "rgba(0,0,0,0.5)", backdropFilter: "blur(3px)" }}
+      style={{
+        backgroundColor: "rgba(0,0,0,0.5)",
+        backdropFilter: "blur(3px)",
+      }}
     >
       <div className="modal-dialog modal-dialog-centered">
         <div className="modal-content border-0 rounded-4">

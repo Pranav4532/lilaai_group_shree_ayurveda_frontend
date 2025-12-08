@@ -4,6 +4,7 @@ import {
   getIngredientById,
   updateIngredient,
 } from "../../../api/ingredientService";
+import { toast } from "react-toastify";
 
 export default function IngredientForm({ ingredientId, onNavigate }) {
   const [name, setName] = useState("");
@@ -19,25 +20,33 @@ export default function IngredientForm({ ingredientId, onNavigate }) {
   };
 
   const handleSubmit = async () => {
-    if (!name.trim()) return alert("Ingredient name cannot be empty.");
-
-    if (isEdit) {
-      await updateIngredient(ingredientId, { name });
-      alert("Ingredient updated successfully!");
-    } else {
-      await createIngredient({ name });
-      alert("Ingredient added successfully!");
+    if (!name.trim()) {
+      return toast.warning("Ingredient name cannot be empty.");
     }
 
-    onNavigate("admin-ingredients");
+    try {
+      if (isEdit) {
+        await updateIngredient(ingredientId, { name });
+        toast.success("Ingredient updated!");
+      } else {
+        await createIngredient({ name });
+        toast.success("Ingredient added!");
+      }
+      onNavigate("admin-ingredients");
+    } catch (error) {
+      toast.error("Failed to save ingredient");
+      console.error(error);
+    }
   };
 
   return (
     <div className="container my-4">
-      <h3 className="fw-bold">{isEdit ? "Edit Ingredient" : "Add Ingredient"}</h3>
+      <h3 className="fw-bold">
+        {isEdit ? "Edit Ingredient" : "Add Ingredient"}
+      </h3>
 
       <div className="mb-3">
-        <label className="form-label">Ingredient Name</label>
+        <label className="form-label fw-bold">Ingredient Name</label>
         <input
           className="form-control"
           value={name}

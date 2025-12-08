@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getAllCoupons, deleteCoupon } from "../../../api/couponService";
 import { Pencil, Trash } from "lucide-react";
+import { toast } from "react-toastify";
 
 export default function CouponList({ onNavigate }) {
   const [coupons, setCoupons] = useState([]);
@@ -15,9 +16,14 @@ export default function CouponList({ onNavigate }) {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure to delete this coupon?")) return;
-    await deleteCoupon(id);
-    loadCoupons();
+    try {
+      await deleteCoupon(id);
+      toast.success("Coupon deleted!");
+      loadCoupons();
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to delete coupon");
+    }
   };
 
   return (
@@ -38,18 +44,20 @@ export default function CouponList({ onNavigate }) {
             <th>Code</th>
             <th>Discount (%)</th>
             <th>Expiry</th>
-            <th>Actions</th>
+            <th width="120px">Actions</th>
           </tr>
         </thead>
 
         <tbody>
           {coupons.length === 0 && (
             <tr>
-              <td colSpan="5" className="text-center text-muted">No coupons found</td>
+              <td colSpan="5" className="text-center text-muted">
+                No coupons found
+              </td>
             </tr>
           )}
 
-          {coupons.map(coupon => (
+          {coupons.map((coupon) => (
             <tr key={coupon.id}>
               <td>{coupon.id}</td>
               <td>{coupon.code}</td>
@@ -73,7 +81,6 @@ export default function CouponList({ onNavigate }) {
               </td>
             </tr>
           ))}
-
         </tbody>
       </table>
     </div>
