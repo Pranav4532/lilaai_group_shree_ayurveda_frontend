@@ -88,6 +88,9 @@ export default function Header({
           onSearchChange={onSearchChange}
           cartCount={cartCount}
           onCartOpen={onCartOpen}
+          user={user}
+          onLoginOpen={onLoginOpen}
+          onLogout={onLogout}
         />
       </div>
       {/* Navbar */}
@@ -121,18 +124,16 @@ export default function Header({
 
           {/* Mobile Toggler */}
           <button
-            className="navbar-toggler"
-            data-bs-toggle="collapse"
-            data-bs-target="#mainNav"
+            className="navbar-toggler d-lg-none"
+            type="button"
+            data-bs-toggle="offcanvas"
+            data-bs-target="#mobileMenu"
           >
             <span className="navbar-toggler-icon"></span>
           </button>
 
           {/* Nav Menu */}
-          <div
-            className="collapse navbar-collapse d-none d-lg-flex"
-            id="mainNav"
-          >
+          <div className="collapse navbar-collapse" id="mainNav">
             <ul className="navbar-nav mx-auto">
               {[
                 { key: "home", label: "Home" },
