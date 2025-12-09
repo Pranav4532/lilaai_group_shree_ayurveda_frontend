@@ -2,7 +2,6 @@ import React from "react";
 import {
   Search,
   ShoppingCart,
-  X,
   Home,
   Info,
   Package,
@@ -17,11 +16,23 @@ export default function MobileNavigation({
   cartCount,
   onCartOpen,
 }) {
+  const menuItems = [
+    { key: "home", label: "Home", icon: Home },
+    { key: "products", label: "Products", icon: Package },
+    { key: "about", label: "About", icon: Info },
+    { key: "contact", label: "Contact", icon: Phone },
+  ];
+
+  const closeMenu = () => {
+    const closeBtn = document.querySelector("#mobileMenu .btn-close");
+    if (closeBtn) closeBtn.click();
+  };
+
   return (
     <>
-      {/* Button visible only on small screens */}
+      {/* Mobile Menu Toggle Button */}
       <button
-        className="btn btn-outline-success d-lg-none"
+        className="btn btn-outline-success d-lg-none ms-2"
         type="button"
         data-bs-toggle="offcanvas"
         data-bs-target="#mobileMenu"
@@ -38,21 +49,19 @@ export default function MobileNavigation({
         aria-labelledby="mobileMenuLabel"
       >
         <div className="offcanvas-header border-bottom">
-          <h5
-            className="offcanvas-title fw-bold text-success"
-            id="mobileMenuLabel"
-          >
-            Kaveri Herbals
+          <h5 className="offcanvas-title fw-bold text-success" id="mobileMenuLabel">
+            Lilaai Group – Shree Ayurveda
           </h5>
           <button
             type="button"
             className="btn-close text-reset"
             data-bs-dismiss="offcanvas"
             aria-label="Close"
-          ></button>
+          />
         </div>
 
         <div className="offcanvas-body d-flex flex-column justify-content-between">
+
           {/* Search Bar */}
           <div className="mb-4">
             <div className="input-group">
@@ -69,36 +78,24 @@ export default function MobileNavigation({
             </div>
           </div>
 
-          {/* Navigation Links */}
+          {/* Navigation Menu */}
           <ul className="list-group mb-4">
-            {[
-              { key: "home", label: "Home", icon: Home },
-              { key: "products", label: "Products", icon: Package },
-              { key: "about", label: "About", icon: Info },
-              { key: "contact", label: "Contact", icon: Phone },
-            ].map((item) => {
-              const Icon = item.icon;
-              return (
-                <li
-                  key={item.key}
-                  className={`list-group-item list-group-item-action border-0 py-3 ${
-                    currentPage === item.key
-                      ? "active bg-success text-white"
-                      : ""
-                  }`}
-                  onClick={() => {
-                    onNavigate(item.key);
-                    document
-                      .querySelector("#mobileMenu button.btn-close")
-                      .click();
-                  }}
-                  role="button"
-                >
-                  <Icon size={18} className="me-2" />
-                  {item.label}
-                </li>
-              );
-            })}
+            {menuItems.map(({ key, label, icon: Icon }) => (
+              <li
+                key={key}
+                className={`list-group-item list-group-item-action border-0 py-3 ${
+                  currentPage === key ? "active bg-success text-white" : ""
+                }`}
+                onClick={() => {
+                  onNavigate(key);
+                  closeMenu();
+                }}
+                role="button"
+              >
+                <Icon size={18} className="me-2" />
+                {label}
+              </li>
+            ))}
           </ul>
 
           {/* Cart Button */}
@@ -106,7 +103,7 @@ export default function MobileNavigation({
             <button
               onClick={() => {
                 onCartOpen();
-                document.querySelector("#mobileMenu button.btn-close").click();
+                closeMenu();
               }}
               className="btn btn-success w-100 position-relative"
             >
