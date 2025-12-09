@@ -1,3 +1,4 @@
+// src/components/MobileNavigation.js
 import React from "react";
 import {
   Search,
@@ -6,6 +7,8 @@ import {
   Info,
   Package,
   Phone,
+  User,
+  LogOut,
 } from "lucide-react";
 
 export default function MobileNavigation({
@@ -15,6 +18,9 @@ export default function MobileNavigation({
   onSearchChange,
   cartCount,
   onCartOpen,
+  user,
+  onLoginOpen,
+  onLogout,
 }) {
   const menuItems = [
     { key: "home", label: "Home", icon: Home },
@@ -32,58 +38,48 @@ export default function MobileNavigation({
     <>
       {/* Mobile Menu Toggle Button */}
       <button
-        className="btn btn-outline-success d-lg-none ms-2"
+        className="navbar-toggler d-lg-none ms-2"
         type="button"
         data-bs-toggle="offcanvas"
         data-bs-target="#mobileMenu"
-        aria-controls="mobileMenu"
       >
         <span className="navbar-toggler-icon"></span>
       </button>
 
       {/* Offcanvas Sidebar */}
-      <div
-        className="offcanvas offcanvas-end"
-        tabIndex="-1"
-        id="mobileMenu"
-        aria-labelledby="mobileMenuLabel"
-      >
+      <div className="offcanvas offcanvas-end" id="mobileMenu">
         <div className="offcanvas-header border-bottom">
-          <h5 className="offcanvas-title fw-bold text-success" id="mobileMenuLabel">
-            Lilaai Group – Shree Ayurveda
+          <h5 className="offcanvas-title fw-bold text-success">
+            Lilaai Ayurveda
           </h5>
           <button
             type="button"
-            className="btn-close text-reset"
+            className="btn-close"
             data-bs-dismiss="offcanvas"
-            aria-label="Close"
           />
         </div>
 
-        <div className="offcanvas-body d-flex flex-column justify-content-between">
-
-          {/* Search Bar */}
-          <div className="mb-4">
-            <div className="input-group">
-              <span className="input-group-text bg-light border-end-0">
-                <Search size={16} />
-              </span>
-              <input
-                type="text"
-                className="form-control border-start-0"
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => onSearchChange(e.target.value)}
-              />
-            </div>
+        <div className="offcanvas-body d-flex flex-column">
+          {/* Search */}
+          <div className="input-group mb-3">
+            <span className="input-group-text">
+              <Search size={16} />
+            </span>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Search products..."
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+            />
           </div>
 
-          {/* Navigation Menu */}
+          {/* Menu Navigation */}
           <ul className="list-group mb-4">
             {menuItems.map(({ key, label, icon: Icon }) => (
               <li
                 key={key}
-                className={`list-group-item list-group-item-action border-0 py-3 ${
+                className={`list-group-item py-3 ${
                   currentPage === key ? "active bg-success text-white" : ""
                 }`}
                 onClick={() => {
@@ -98,14 +94,37 @@ export default function MobileNavigation({
             ))}
           </ul>
 
-          {/* Cart Button */}
-          <div className="mt-auto pt-3 border-top">
+          {/* Login/Logout */}
+          <div className="mt-auto border-top pt-3">
+            {user ? (
+              <button
+                className="btn btn-outline-danger w-100 mb-2"
+                onClick={() => {
+                  onLogout();
+                  closeMenu();
+                }}
+              >
+                <LogOut size={18} className="me-2" /> Logout
+              </button>
+            ) : (
+              <button
+                className="btn btn-outline-success w-100 mb-2"
+                onClick={() => {
+                  onLoginOpen();
+                  closeMenu();
+                }}
+              >
+                <User size={18} className="me-2" /> Login
+              </button>
+            )}
+
+            {/* Cart Button */}
             <button
+              className="btn btn-success w-100 position-relative"
               onClick={() => {
                 onCartOpen();
                 closeMenu();
               }}
-              className="btn btn-success w-100 position-relative"
             >
               <ShoppingCart size={18} className="me-2" />
               View Cart
