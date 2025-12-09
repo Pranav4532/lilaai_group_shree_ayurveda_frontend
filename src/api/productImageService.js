@@ -2,7 +2,6 @@ import api from "./axios";
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem("token")?.replace(/"/g, "");
-  console.log("🔑 Token Sent:", token);
   return {
     Authorization: `Bearer ${token}`,
   };
@@ -66,3 +65,4 @@ export const setPrimaryImage = async (productId, imageId) => {
   );
   return res.data;
 };
+
