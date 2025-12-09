@@ -21,14 +21,35 @@ import { getCurrentUser, logoutUser } from "./api/userService";
 import { getCart } from "./api/cartService";
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState("home");
+  const [currentPage, setCurrentPage] = useState(() => {
+    return localStorage.getItem("currentPage") || "home";
+  });
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedProductId, setSelectedProductId] = useState(null);
 
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
-  const [user, setUser] = useState(getCurrentUser());
+  const [user, setUser] = useState(null);
   const [cartCount, setCartCount] = useState(0);
+
+  useEffect(() => {
+    const savedUser = getCurrentUser();
+    const token = localStorage.getItem("token");
+
+    if (token) {
+      const decoded = JSON.parse(atob(token.split(".")[1]));
+      const isExpired = decoded.exp * 1000 < Date.now();
+
+      if (isExpired) {
+        handleLogout();
+        return;
+      }
+    }
+
+    if (savedUser) {
+      setUser(savedUser);
+    }
+  }, []);
 
   useEffect(() => {
     loadCartCount();
@@ -47,6 +68,8 @@ export default function App() {
   };
 
   const handleNavigate = useCallback((page, id = null) => {
+    localStorage.setItem("currentPage", page);
+
     if (page.startsWith("admin")) {
       return setCurrentPage("admin");
     }
@@ -63,7 +86,7 @@ export default function App() {
     logoutUser();
     setUser(null);
     setCartCount(0);
-    setCurrentPage("home");
+    localStorage.removeItem("currentPage");
   };
 
   const renderPage = () => {
@@ -94,18 +117,17 @@ export default function App() {
       case "profile":
         return <ProfilePage onNavigate={handleNavigate} />;
       case "admin":
-        if (!user)
-          return (
-            <h3 className="text-center text-danger py-5">
-              Please login as Admin
-            </h3>
-          );
+      case "admin-dashboard":
+        if (!user) {
+          return null;
+        }
 
         if (user.role !== "admin" && user.role !== "superadmin") {
           return (
             <h3 className="text-center text-danger py-5">Access Denied</h3>
           );
         }
+
         return <AdminPage />;
 
       default:
