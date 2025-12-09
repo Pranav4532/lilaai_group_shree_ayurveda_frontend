@@ -17,9 +17,22 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   (err) => {
-    console.log("❌ API ERROR:", err.response?.status, err.response?.data);
     return Promise.reject(err);
   }
 );
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      localStorage.removeItem("currentPage");
+      window.location.reload();
+    }
+    return Promise.reject(error);
+  }
+);
+
 
 export default api;
